@@ -5,7 +5,7 @@ ne bat PAS le marché. Ce qui a été positif : prendre la probabilité « juste
 des bookmakers (cote moyenne, marge retirée) et parier quand UN bookmaker propose une cote
 nettement au-dessus (il est en retard sur le marché). Le modèle sert d'analyse, pas de signal."""
 
-MIN_EDGE = 0.04      # avantage minimum de 4 %
+MIN_EDGE = 0.02      # avantage minimum de 2 % (le seuil positif sur les 2 périodes testées)
 MAX_EDGE = 0.25      # au-delà, c'est presque toujours une info manquante (blessure, rotation...)
 MIN_PROB = 0.25      # on évite les gros outsiders (variance énorme)
 MAX_ODDS = 5.0

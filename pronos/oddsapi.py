@@ -12,12 +12,25 @@ from datetime import datetime, timedelta, timezone
 from .picks import KELLY_FRACTION, MAX_EDGE, MAX_ODDS, MAX_STAKE, MIN_EDGE, MIN_PROB
 
 API = "https://api.the-odds-api.com/v4"
-# groupes de sports suivis, par ordre de priorité ; le football est déjà couvert par football-data
-GROUPS = ["Basketball", "Ice Hockey", "American Football", "Tennis", "Baseball",
-          "Mixed Martial Arts", "Rugby Union", "Rugby League", "Handball", "Aussie Rules"]
-MAX_SPORTS = 6        # 6 appels/jour pour les cotes ≈ 180/mois, le reste sert aux scores
+# groupes suivis ; le football inclut tous les championnats que l'API propose
+GROUPS = ["Soccer", "Basketball", "Ice Hockey", "American Football", "Tennis", "Baseball",
+          "Mixed Martial Arts", "Rugby Union", "Rugby League", "Handball", "Aussie Rules", "Cricket"]
+# championnats déjà couverts gratuitement par football-data : inutile d'y dépenser le quota
+COVERED = {"soccer_epl", "soccer_efl_champ", "soccer_england_league1", "soccer_england_league2",
+           "soccer_germany_bundesliga", "soccer_germany_bundesliga2", "soccer_italy_serie_a",
+           "soccer_italy_serie_b", "soccer_spain_la_liga", "soccer_spain_segunda_division",
+           "soccer_france_ligue_one", "soccer_france_ligue_two", "soccer_netherlands_eredivisie",
+           "soccer_belgium_first_div", "soccer_portugal_primeira_liga", "soccer_turkey_super_league",
+           "soccer_greece_super_league", "soccer_spl"}
+# priorité 0 : ce qui est le plus joué sur Bet360 ; 1 : grandes ligues des autres sports
+TOP_CUPS = ("uefa_champs_league", "uefa_europa_league", "uefa_europa_conference_league",
+            "africa_cup", "fifa_world_cup", "copa_libertadores", "copa_sudamericana")
+TOP_OTHERS = ("basketball_nba", "basketball_euroleague", "icehockey_nhl", "americanfootball_nfl",
+              "baseball_mlb", "tennis_atp", "tennis_wta")
 MIN_BOOKS = 5         # consensus fiable seulement avec assez de bookmakers
 MIN_REMAINING = 15    # on s'arrête avant d'épuiser le quota mensuel
+SCORES_RESERVE = 8    # requêtes gardées chaque jour pour régler les paris (scores)
+HORIZON_HOURS = 48
 EXCHANGES = {"betfair_ex_eu", "betfair_ex_uk", "matchbook", "smarkets"}
 EXCHANGE_COMMISSION = 0.05
 
@@ -43,19 +56,56 @@ class Client:
             return None
 
 
-def pick_sports(sports):
+def priority(sport):
+    key = sport["key"]
+    if any(c in key for c in TOP_CUPS):
+        return 0
+    if any(key.startswith(t) for t in TOP_OTHERS):
+        return 1
+    return 2 if sport["group"] == "Soccer" else 3
+
+
+def daily_budget(remaining, today=None):
+    """Requêtes de cotes à dépenser aujourd'hui pour tenir jusqu'à la fin du mois."""
+    if remaining is None:
+        return 8
+    today = today or datetime.now(timezone.utc).date()
+    nxt = (today.replace(day=28) + timedelta(days=4)).replace(day=1)
+    days_left = (nxt - today).days
+    return max(0, min(40, (remaining - MIN_REMAINING) // days_left - SCORES_RESERVE))
+
+
+def pick_sports(client, sports):
+    """Compétitions actives qui ont des matchs dans les 48 h, par priorité, dans le budget du jour.
+    La liste des matchs (/events) ne coûte rien ; seules les cotes consomment le quota."""
     active = [s for s in sports or [] if s.get("active") and not s.get("has_outrights")
-              and s.get("group") in GROUPS]
-    active.sort(key=lambda s: GROUPS.index(s["group"]))
-    chosen, per_group = [], {}
-    for s in active:  # au plus 2 compétitions par sport pour varier
-        if per_group.get(s["group"], 0) < 2:
-            chosen.append(s)
-            per_group[s["group"]] = per_group.get(s["group"], 0) + 1
-    return chosen[:MAX_SPORTS]
+              and s.get("group") in GROUPS and s["key"] not in COVERED]
+    now = datetime.now(timezone.utc)
+    limit = now + timedelta(hours=HORIZON_HOURS)
+    with_games = []
+    start_quota = client.remaining
+    for s in active:
+        if start_quota is not None and client.remaining is not None and start_quota - client.remaining > 3:
+            print("[oddsapi] ATTENTION : /events consomme du quota, arrêt du balayage")
+            break
+        events = client.get(f"/sports/{s['key']}/events", dateFormat="iso") or []
+        n = sum(1 for ev in events
+                if now < datetime.fromisoformat(ev["commence_time"].replace("Z", "+00:00")) < limit)
+        if n:
+            with_games.append((priority(s), -n, s))
+    with_games.sort(key=lambda t: (t[0], t[1]))
+    budget = daily_budget(client.remaining)
+    chosen = [s for _, _, s in with_games[:budget]]
+    print(f"[oddsapi] {len(with_games)} compétitions jouent dans les {HORIZON_HOURS} h, budget {budget}, "
+          f"quota restant {client.remaining}")
+    print("[oddsapi] retenues :", ", ".join(s["title"] for s in chosen))
+    skipped = [s["title"] for _, _, s in with_games[budget:]]
+    if skipped:
+        print("[oddsapi] hors budget :", ", ".join(skipped))
+    return chosen
 
 
-def evaluate_event(ev, horizon_hours=72, fairs=None):
+def evaluate_event(ev, horizon_hours=HORIZON_HOURS, fairs=None):
     """Paris value d'un match ; si `fairs` est une liste, on y ajoute aussi ses cotes justes."""
     start = datetime.fromisoformat(ev["commence_time"].replace("Z", "+00:00"))
     now = datetime.now(timezone.utc)
@@ -105,7 +155,7 @@ def evaluate_event(ev, horizon_hours=72, fairs=None):
 
 
 def fetch_picks(client, fairs=None):
-    sports = pick_sports(client.get("/sports"))  # cet appel ne compte pas dans le quota
+    sports = pick_sports(client, client.get("/sports"))  # /sports et /events ne comptent pas dans le quota
     picks = []
     for s in sports:
         events = client.get(f"/sports/{s['key']}/odds", regions="eu", markets="h2h",

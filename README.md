@@ -23,7 +23,7 @@ Chaque pari proposé est enregistré dans `docs/journal.json` (avec la cote du j
 ## Autres sports (The Odds API)
 1. Créer une clé gratuite sur https://the-odds-api.com (500 requêtes/mois).
 2. Dans le dépôt : Settings → Secrets and variables → Actions → New repository secret, nom `ODDS_API_KEY`.
-3. Le site ajoute alors chaque jour jusqu'à 6 compétitions actives (NBA, NHL, NFL, tennis, MLB, MMA…), même stratégie de consensus. Environ 200 à 400 requêtes par mois ; le script s'arrête avant d'épuiser le quota.
+3. Le site regarde alors chaque jour toutes les compétitions de l'API (foot du monde entier : coupes d'Europe, Arabie saoudite, Brésil, MLS… ; NBA, NHL, tennis…) et récupère les cotes de celles qui jouent dans les 48 h, par priorité (coupes d'Europe d'abord), dans un budget calculé pour tenir le quota jusqu'à la fin du mois. Lister les matchs est gratuit ; seules les cotes consomment le quota. Avec l'offre gratuite, c'est environ 8 compétitions par jour ; une offre payante permet de tout couvrir.
 Pas de backtest pour ces sports (l'historique des cotes est payant) : seul le journal dira si ça marche.
 
 ## Mise en ligne (gratuite)

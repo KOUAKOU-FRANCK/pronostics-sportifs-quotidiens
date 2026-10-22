@@ -250,7 +250,7 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
   supérieure, c'est un pari value ; sinon, passez.</p>
   {min_odds_html(rows, other_fairs)}
 
-  <h2>Autres sports</h2>
+  <h2>Autres compétitions (foot du monde entier et autres sports)</h2>
   {others_html}
 
   <h2>Journal des paris proposés</h2>

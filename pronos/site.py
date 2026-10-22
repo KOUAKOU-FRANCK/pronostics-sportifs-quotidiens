@@ -1,8 +1,10 @@
 """Génération de la page HTML statique (docs/index.html)."""
 import html
-from datetime import date
+from datetime import date, datetime
+from zoneinfo import ZoneInfo
 
 from .data import LEAGUES
+from .journal import stats as journal_stats
 from .picks import MARKETS, confidence
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
@@ -22,7 +24,67 @@ def e(s):
     return html.escape(str(s))
 
 
-def render(today, rows, bt, generated_at):
+PARIS = ZoneInfo("Europe/Paris")
+
+
+def local_time(iso):
+    try:
+        d = datetime.fromisoformat(iso.replace("Z", "+00:00")).astimezone(PARIS)
+        return f"{fr_date(d.date())} {d:%H:%M}"
+    except ValueError:
+        return iso
+
+
+def other_card(p):
+    return f"""
+      <article class="pick">
+        <div class="pick-top"><span class="league">{e(p['sport'])}</span>
+          <span class="when">{e(local_time(p['start']))}</span></div>
+        <h3>{e(p['home'])} <span class="vs">vs</span> {e(p['away'])}</h3>
+        <p class="bet">{e(p['label'])} <strong>@ {p['odds']:.2f}</strong> <span class="book">chez {e(p['book'])}</span></p>
+        <dl>
+          <div><dt>Proba (consensus)</dt><dd>{pct(p['prob'])}</dd></div>
+          <div><dt>Cote juste / moyenne</dt><dd>{p['fair']:.2f} / {p['avg_odds']:.2f}</dd></div>
+          <div><dt>Avantage</dt><dd class="pos">+{p['edge'] * 100:.1f} %</dd></div>
+          <div><dt>Mise conseillée</dt><dd>{p['stake'] * 100:.1f} % bankroll</dd></div>
+        </dl>
+        <span class="conf">{p['n_books']} bookmakers comparés</span>
+      </article>"""
+
+
+def journal_html(entries):
+    def block(title, st):
+        if not st["n"] and not st["pending"]:
+            return f'<div><b>–</b><span>{e(title)} : aucun pari encore</span></div>'
+        cls = "pos" if st["profit"] >= 0 else "neg"
+        return (f'<div><b class="{cls}">{st["profit"]:+.2f} u</b><span>{e(title)} : {st["n"]} réglés, '
+                f'{st["pending"]} en attente · réussite {pct(st["hit_rate"])} · ROI {st["roi"] * 100:+.1f} %</span></div>')
+    total = journal_stats(entries)
+    head = f"""<div class="stats">{block("Tous les paris", total)}{block("Football", journal_stats(entries, "Football"))}{block("Autres sports", journal_stats(entries, "autres"))}</div>
+  <p class="sub">u = unité : gain ou perte si on avait misé 1 € sur chaque pari, à la cote affichée le jour où il a été proposé.</p>"""
+    if not entries:
+        return head + '<p class="empty">Le journal démarre aujourd\'hui : chaque pari proposé y sera enregistré puis réglé avec le vrai score.</p>'
+    order = {"en attente": 0}
+    recent = sorted(entries, key=lambda x: (order.get(x["status"], 1), x["start"]), reverse=False)
+    pend = [x for x in recent if x["status"] == "en attente"]
+    done = sorted([x for x in recent if x["status"] != "en attente"], key=lambda x: x["start"], reverse=True)
+    trs = []
+    for x in (pend + done)[:60]:
+        st = x["status"]
+        cls = {"gagné": "pos", "perdu": "neg"}.get(st, "")
+        prof = f'{x["profit"]:+.2f}' if x["profit"] is not None else ""
+        trs.append(f"""<tr><td>{e(local_time(x['start']) if 'T' in x['start'] and x['sport'] != 'Football' else x['start'][:10])}</td>
+          <td>{e(x['sport'] if x['sport'] != 'Football' else LEAGUES.get(x['league'], x['league']))}</td>
+          <td class="teams">{e(x['home'])} – {e(x['away'])}</td><td>{e(x['label'])}</td>
+          <td class="num">{x['odds']:.2f}</td><td>{e(x.get('book') or '')}</td><td class="num">{e(x['result'] or '')}</td>
+          <td class="{cls}">{e(st)}</td><td class="num {cls}">{prof}</td></tr>""")
+    return head + f"""
+  <div class="tbl"><table>
+    <thead><tr><th>Date</th><th>Compétition</th><th>Match</th><th>Pari</th><th>Cote</th><th>Bookmaker</th><th>Score</th><th>Statut</th><th>Gain (u)</th></tr></thead>
+    <tbody>{"".join(trs)}</tbody></table></div>"""
+
+
+def render(today, rows, bt, generated_at, others=(), entries=(), odds_api=False):
     picks = sorted([(r, p) for r in rows for p in r["picks"]],
                    key=lambda rp: -rp[1]["edge"])
     top = picks[:10]
@@ -47,6 +109,15 @@ def render(today, rows, bt, generated_at):
 
     cards = "".join(pick_card(r, p) for r, p in top) or \
         '<p class="empty">Aucun pari ne passe nos filtres aujourd\'hui. Ne pas parier est aussi une décision gagnante.</p>'
+
+    others = sorted(others, key=lambda p: -p["edge"])[:12]
+    if others:
+        others_html = '<div class="grid">' + "".join(other_card(p) for p in others) + "</div>"
+    elif odds_api:
+        others_html = '<p class="empty">Aucun pari ne passe nos filtres dans les autres sports aujourd\'hui.</p>'
+    else:
+        others_html = '<p class="empty">Désactivé : ajoutez une clé The Odds API (voir le README).</p>'
+    journal = journal_html(list(entries))
 
     trs = []
     for r in sorted(rows, key=lambda r: (r["match"].day, r["match"].time, r["match"].div)):
@@ -122,7 +193,13 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
   <h2>Meilleurs paris value</h2>
   <div class="grid">{cards}</div>
 
-  <h2>Comment la stratégie aurait performé</h2>
+  <h2>Autres sports</h2>
+  {others_html}
+
+  <h2>Journal des paris proposés</h2>
+  {journal}
+
+  <h2>Comment la stratégie aurait performé (football, simulation)</h2>
   {bt_html}
 
   <h2>Tous les matchs à venir</h2>

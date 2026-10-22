@@ -52,7 +52,13 @@ def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, price=PRICE):
                       "fair": 1 / p, "edge": edge, "stake": stake,
                       "book": odds.get(k + "_book") if price == "best" else None,
                       "model_prob": pred[k], "avg_odds": odds.get(k)})
-    return picks
+    # un seul pari par marché (1N2, buts) : jamais les deux côtés d'un même match
+    best = {}
+    for p in picks:
+        g = "ou" if p["market"] in ("O25", "U25") else "1x2"
+        if g not in best or p["edge"] > best[g]["edge"]:
+            best[g] = p
+    return list(best.values())
 
 
 def confidence(p):

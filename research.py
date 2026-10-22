@@ -21,8 +21,9 @@ if os.path.exists(fx_path):
 
 history = data.load_history(today, cache, seasons=4)
 print(len(history), "matchs historiques")
-grid = [{"blend": b, "min_edge": e, "use_max": u}
-        for u in (False, True) for b in (0.35, 0.6, 0.8) for e in (0.03, 0.06, 0.1)]
+# blend=1.0 : on ignore le modèle et on cherche seulement les bookmakers en retard sur le consensus
+grid = [{"blend": b, "min_edge": e, "use_max": True}
+        for b in (0.35, 0.9, 1.0) for e in (0.02, 0.03, 0.04, 0.06, 0.08)]
 for label, end in (("RÉGLAGE (il y a 2 ans -> 1 an)", today - timedelta(days=365)),
                    ("VALIDATION (12 derniers mois)", today)):
     print("\n==", label)

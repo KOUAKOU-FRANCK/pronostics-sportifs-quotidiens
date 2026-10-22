@@ -64,7 +64,8 @@ def min_odds_html(rows, other_fairs):
     trs = []
     for f in sorted(other_fairs, key=lambda f: f["start"]):
         cells = " · ".join(f"{e('Nul' if n == 'Draw' else n)} <b>{min_odds(v):.2f}</b>"
-                           for n, v in sorted(f["fair"].items()))
+                           for n, v in sorted(f["fair"].items(),  # ordre domicile, nul, extérieur
+                                              key=lambda kv: (kv[0] != f["home"], kv[0] != "Draw")))
         trs.append(f'<tr><td>{e(local_time(f["start"]))}</td><td>{e(f["sport"])}</td>'
                    f'<td class="teams">{e(f["home"])} – {e(f["away"])}</td><td>{cells}</td></tr>')
     if trs:

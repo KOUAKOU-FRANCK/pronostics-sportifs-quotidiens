@@ -107,6 +107,12 @@ def parse_csv(text: str, default_div: str | None = None) -> list[Match]:
             "A": _num(row, "AvgA", "BbAvA", "PSA", "B365A"),
             "O25": _num(row, "Avg>2.5", "BbAv>2.5", "P>2.5", "B365>2.5"),
             "U25": _num(row, "Avg<2.5", "BbAv<2.5", "P<2.5", "B365<2.5"),
+            # meilleure cote disponible chez les bookmakers suivis
+            "H_max": _num(row, "MaxH", "BbMxH"),
+            "D_max": _num(row, "MaxD", "BbMxD"),
+            "A_max": _num(row, "MaxA", "BbMxA"),
+            "O25_max": _num(row, "Max>2.5", "BbMx>2.5"),
+            "U25_max": _num(row, "Max<2.5", "BbMx<2.5"),
         }
         out.append(Match(div, d, (row.get("Time") or "").strip(), home, away,
                          int(hg) if hg.isdigit() else None,

@@ -7,6 +7,8 @@ MIN_PROB = 0.25      # on évite les gros outsiders (variance énorme)
 MAX_ODDS = 5.0
 KELLY_FRACTION = 0.25
 MAX_STAKE = 0.03     # jamais plus de 3 % de la bankroll sur un pari
+BLEND = 0.35         # poids donné au marché dans la probabilité finale
+USE_MAX = False      # parier à la meilleure cote du marché plutôt qu'à la moyenne
 
 MARKETS = {
     "H": "Victoire domicile", "D": "Match nul", "A": "Victoire extérieur",
@@ -25,7 +27,7 @@ def market_probs(odds):
     return out
 
 
-def evaluate(pred, odds, blend=0.35):
+def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, use_max=USE_MAX):
     """Renvoie la liste des paris intéressants pour un match.
 
     On mélange notre modèle avec le marché (le marché est très bien informé :
@@ -33,12 +35,12 @@ def evaluate(pred, odds, blend=0.35):
     mp = market_probs(odds)
     picks = []
     for k in MARKETS:
-        o = odds.get(k)
+        o = odds.get(k + "_max") if use_max else odds.get(k)
         if not o or k not in mp:
             continue
         p = (1 - blend) * pred[k] + blend * mp[k]
         edge = p * o - 1
-        if edge < MIN_EDGE or edge > MAX_EDGE or p < MIN_PROB or o > MAX_ODDS:
+        if edge < min_edge or edge > MAX_EDGE or p < MIN_PROB or o > MAX_ODDS:
             continue
         kelly = edge / (o - 1)
         stake = min(KELLY_FRACTION * kelly, MAX_STAKE)

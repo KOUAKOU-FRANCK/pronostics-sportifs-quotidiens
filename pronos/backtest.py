@@ -13,12 +13,14 @@ def won(market, m):
             "O25": t > 2, "U25": t <= 2}[market]
 
 
-def run(history, today, days=365, refit_every=14):
+def run(history, today, days=365, refit_every=14, grid=None):
+    """grid : liste de dicts de paramètres pour evaluate() ; renvoie un résumé par jeu de paramètres."""
+    grid = grid or [{}]
     by_div = defaultdict(list)
     for m in history:
         by_div[m.div].append(m)
     start = today - timedelta(days=days)
-    bets = []
+    bets = [[] for _ in grid]
     for div, ms in by_div.items():
         ms.sort(key=lambda m: m.day)
         cursor = start
@@ -31,11 +33,14 @@ def run(history, today, days=365, refit_every=14):
                 continue
             model = PoissonModel().fit(past, window[0].day, iters=25)
             for m in window:
-                for p in evaluate(model.predict(m.home, m.away), m.odds):
-                    profit = (p["odds"] - 1) if won(p["market"], m) else -1.0
-                    bets.append({"div": div, "market": p["market"], "odds": p["odds"],
-                                 "stake": p["stake"], "profit": profit})
-    return summarize(bets)
+                pred = model.predict(m.home, m.away)
+                for g, params in enumerate(grid):
+                    for p in evaluate(pred, m.odds, **params):
+                        profit = (p["odds"] - 1) if won(p["market"], m) else -1.0
+                        bets[g].append({"div": div, "market": p["market"], "odds": p["odds"],
+                                        "stake": p["stake"], "profit": profit})
+    out = [summarize(b) for b in bets]
+    return out[0] if len(out) == 1 else out
 
 
 def summarize(bets):

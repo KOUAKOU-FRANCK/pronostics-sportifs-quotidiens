@@ -55,7 +55,8 @@ def pick_sports(sports):
     return chosen[:MAX_SPORTS]
 
 
-def evaluate_event(ev, horizon_hours=72):
+def evaluate_event(ev, horizon_hours=72, fairs=None):
+    """Paris value d'un match ; si `fairs` est une liste, on y ajoute aussi ses cotes justes."""
     start = datetime.fromisoformat(ev["commence_time"].replace("Z", "+00:00"))
     now = datetime.now(timezone.utc)
     if not (now < start < now + timedelta(hours=horizon_hours)):
@@ -80,6 +81,10 @@ def evaluate_event(ev, horizon_hours=72):
         s = sum(1 / v for v in p.values())
         for n in names:
             fair[n] += (1 / p[n]) / s / len(books)
+    if fairs is not None:
+        fairs.append({"sport": ev["sport_title"], "start": ev["commence_time"],
+                      "home": ev["home_team"], "away": ev["away_team"],
+                      "fair": {n: 1 / q for n, q in fair.items()}})
     picks = []
     for n in names:
         o, book = max((p[n], t) for t, p in books)
@@ -99,14 +104,14 @@ def evaluate_event(ev, horizon_hours=72):
     return sorted(picks, key=lambda p: -p["edge"])[:1]  # un seul côté par match
 
 
-def fetch_picks(client):
+def fetch_picks(client, fairs=None):
     sports = pick_sports(client.get("/sports"))  # cet appel ne compte pas dans le quota
     picks = []
     for s in sports:
         events = client.get(f"/sports/{s['key']}/odds", regions="eu", markets="h2h",
                             oddsFormat="decimal", dateFormat="iso")
         for ev in events or []:
-            picks += evaluate_event(ev)
+            picks += evaluate_event(ev, fairs=fairs)
     print(f"[oddsapi] {len(sports)} sports, {len(picks)} paris, quota restant {client.remaining}")
     return picks
 

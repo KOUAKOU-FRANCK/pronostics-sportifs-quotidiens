@@ -12,9 +12,10 @@ MAX_ODDS = 5.0
 KELLY_FRACTION = 0.25
 MAX_STAKE = 0.03     # jamais plus de 3 % de la bankroll sur un pari
 BLEND = 1.0          # poids du consensus du marché dans la probabilité (1.0 = modèle ignoré)
-PRICE = "mine"       # cote jouée : "avg" moyenne, "max" max du marché, "best" meilleur bookmaker nommé,
+PRICE = "best"       # cote jouée : "avg" moyenne, "max" max du marché, "best" meilleur bookmaker nommé,
                      # "mine" meilleur bookmaker parmi MY_BOOKS
-MY_BOOKS = ["Bet365"]  # bookmakers où l'on parie réellement (noms comme dans data.BOOKS)
+MY_BOOKS = []        # bookmakers présents dans les données où l'on parie (noms de data.BOOKS), pour PRICE="mine"
+MY_BOOK_NAME = "Bet360"  # bookmaker réellement utilisé (absent des données) : on affiche la cote minimum à y trouver
 
 MARKETS = {
     "H": "Victoire domicile", "D": "Match nul", "A": "Victoire extérieur",

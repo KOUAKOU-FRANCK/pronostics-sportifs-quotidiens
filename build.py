@@ -57,13 +57,13 @@ def main():
     journal.settle_football(entries, history)
 
     # autres sports : seulement si la clé The Odds API est configurée (secret ODDS_API_KEY)
-    others = []
+    others, other_fairs = [], []
     key = os.environ.get("ODDS_API_KEY", "").strip()
     if key:
         client = oddsapi.Client(key)
         for sport_key in journal.pending_sports(entries):
             journal.settle_other(entries, sport_key, oddsapi.fetch_scores(client, sport_key))
-        others = oddsapi.fetch_picks(client)
+        others = oddsapi.fetch_picks(client, other_fairs)
         journal.add_other(entries, others)
     else:
         print("[oddsapi] pas de clé ODDS_API_KEY : autres sports désactivés")
@@ -73,7 +73,7 @@ def main():
     now = datetime.now(timezone.utc).strftime("%d/%m/%Y %H:%M UTC")
     with open(os.path.join(out_dir, "index.html"), "w", encoding="utf-8") as fh:
         fh.write(site.render(today, rows, bt, now, others=others, entries=entries,
-                             odds_api=bool(key)))
+                             odds_api=bool(key), other_fairs=other_fairs))
     with open(os.path.join(out_dir, "picks.json"), "w", encoding="utf-8") as fh:
         json.dump([{"date": r["match"].day.isoformat(), "league": r["match"].div,
                     "home": r["match"].home, "away": r["match"].away, **p}

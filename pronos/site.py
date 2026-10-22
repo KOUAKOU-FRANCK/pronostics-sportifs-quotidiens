@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 from .data import LEAGUES
 from .journal import stats as journal_stats
-from .picks import MARKETS
+from .picks import MARKETS, MIN_EDGE, MY_BOOK_NAME, market_probs
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
@@ -35,6 +35,45 @@ def local_time(iso):
         return iso
 
 
+def min_odds(fair):
+    """Cote minimum à trouver chez son bookmaker pour avoir l'avantage requis."""
+    return fair * (1 + MIN_EDGE)
+
+
+def mine_line(p):
+    return (f'<p class="mine">Sur {e(MY_BOOK_NAME)} : à jouer seulement si la cote est '
+            f'<b>≥ {min_odds(p["fair"]):.2f}</b></p>')
+
+
+def min_odds_html(rows, other_fairs):
+    out = []
+    trs = []
+    for r in sorted(rows, key=lambda r: (r["match"].day, r["match"].time)):
+        m = r["match"]
+        mp = market_probs(m.odds)
+        if "H" not in mp:
+            continue
+        cells = "".join(f'<td class="num">{min_odds(1 / mp[k]):.2f}</td>' if k in mp else "<td></td>"
+                        for k in ("H", "D", "A", "O25", "U25"))
+        trs.append(f"<tr><td>{e(m.day.strftime('%d/%m'))} {e(m.time)}</td><td>{e(m.div)}</td>"
+                   f'<td class="teams">{e(m.home)} – {e(m.away)}</td>{cells}</tr>')
+    if trs:
+        out.append(f"""<div class="tbl"><table>
+    <thead><tr><th>Date</th><th>Ligue</th><th>Match</th><th>1</th><th>N</th><th>2</th><th>+2,5</th><th>-2,5</th></tr></thead>
+    <tbody>{"".join(trs)}</tbody></table></div>""")
+    trs = []
+    for f in sorted(other_fairs, key=lambda f: f["start"]):
+        cells = " · ".join(f"{e('Nul' if n == 'Draw' else n)} <b>{min_odds(v):.2f}</b>"
+                           for n, v in sorted(f["fair"].items()))
+        trs.append(f'<tr><td>{e(local_time(f["start"]))}</td><td>{e(f["sport"])}</td>'
+                   f'<td class="teams">{e(f["home"])} – {e(f["away"])}</td><td>{cells}</td></tr>')
+    if trs:
+        out.append(f"""<div class="tbl" style="margin-top:14px"><table>
+    <thead><tr><th>Date</th><th>Sport</th><th>Match</th><th>Cote minimum par issue</th></tr></thead>
+    <tbody>{"".join(trs)}</tbody></table></div>""")
+    return "".join(out) or '<p class="empty">Pas encore de matchs avec des cotes disponibles.</p>'
+
+
 def elo_badge(p):
     if p.get("elo_agree") is None:
         return ""
@@ -56,6 +95,7 @@ def other_card(p):
           <div><dt>Avantage</dt><dd class="pos">+{p['edge'] * 100:.1f} %</dd></div>
           <div><dt>Mise conseillée</dt><dd>{p['stake'] * 100:.1f} % bankroll</dd></div>
         </dl>
+        {mine_line(p)}
         <span class="conf">{p['n_books']} bookmakers comparés</span>
       </article>"""
 
@@ -93,7 +133,7 @@ def journal_html(entries):
     <tbody>{"".join(trs)}</tbody></table></div>"""
 
 
-def render(today, rows, bt, generated_at, others=(), entries=(), odds_api=False):
+def render(today, rows, bt, generated_at, others=(), entries=(), odds_api=False, other_fairs=()):
     picks = sorted([(r, p) for r in rows for p in r["picks"]],
                    key=lambda rp: -rp[1]["edge"])
     top = picks[:10]
@@ -113,6 +153,7 @@ def render(today, rows, bt, generated_at, others=(), entries=(), odds_api=False)
           <div><dt>Avantage</dt><dd class="pos">+{p['edge'] * 100:.1f} %</dd></div>
           <div><dt>Mise conseillée</dt><dd>{p['stake'] * 100:.1f} % bankroll</dd></div>
         </dl>
+        {mine_line(p)}
         {elo_badge(p)}
       </article>"""
 
@@ -174,6 +215,7 @@ h1 {{ margin:0 0 4px; font-size:28px }} h2 {{ margin:40px 0 12px; font-size:20px
 .pick {{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px }}
 .pick-top {{ display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--mute) }}
 .pick h3 {{ margin:8px 0 4px; font-size:17px }} .vs {{ color:var(--mute); font-weight:400; font-size:13px }}
+.mine {{ margin:0 0 10px; font-size:13px; padding:6px 8px; border-radius:6px; background:var(--hl) }}
 .bet {{ margin:0 0 10px; font-size:16px }} .bet strong {{ color:var(--acc) }} .book {{ font-size:13px; color:var(--mute) }}
 dl {{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:0 0 10px }}
 dt {{ font-size:12px; color:var(--mute) }} dd {{ margin:0; font-weight:600 }}
@@ -201,6 +243,12 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
 
   <h2>Meilleurs paris value</h2>
   <div class="grid">{cards}</div>
+
+  <h2>Cotes minimum à chercher sur {e(MY_BOOK_NAME)}</h2>
+  <p class="sub">Les cotes de {e(MY_BOOK_NAME)} ne sont pas dans nos données. Pour chaque issue, voici la cote à partir de laquelle
+  le pari devient intéressant (cote juste du marché + {MIN_EDGE * 100:.0f} %). Si {e(MY_BOOK_NAME)} propose une cote égale ou
+  supérieure, c'est un pari value ; sinon, passez.</p>
+  {min_odds_html(rows, other_fairs)}
 
   <h2>Autres sports</h2>
   {others_html}

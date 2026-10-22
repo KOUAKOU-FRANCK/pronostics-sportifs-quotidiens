@@ -34,10 +34,11 @@ def render(today, rows, bt, generated_at):
         <div class="pick-top"><span class="league">{e(LEAGUES.get(m.div, m.div))}</span>
           <span class="when">{e(fr_date(m.day))} {e(m.time)}</span></div>
         <h3>{e(m.home)} <span class="vs">vs</span> {e(m.away)}</h3>
-        <p class="bet">{e(p['label'])} <strong>@ {p['odds']:.2f}</strong></p>
+        <p class="bet">{e(p['label'])} <strong>@ {p['odds']:.2f}</strong>{f' <span class="book">chez {e(p["book"])}</span>' if p.get('book') else ''}</p>
         <dl>
-          <div><dt>Notre proba</dt><dd>{pct(p['prob'])}</dd></div>
-          <div><dt>Cote juste</dt><dd>{p['fair']:.2f}</dd></div>
+          <div><dt>Proba (consensus)</dt><dd>{pct(p['prob'])}</dd></div>
+          <div><dt>Cote juste / moyenne</dt><dd>{p['fair']:.2f} / {p['avg_odds']:.2f}</dd></div>
+          <div><dt>Notre modèle</dt><dd>{pct(p['model_prob'])}</dd></div>
           <div><dt>Avantage</dt><dd class="pos">+{p['edge'] * 100:.1f} %</dd></div>
           <div><dt>Mise conseillée</dt><dd>{p['stake'] * 100:.1f} % bankroll</dd></div>
         </dl>
@@ -66,7 +67,7 @@ def render(today, rows, bt, generated_at):
                      for k, v in sorted(bt["per_market"].items()))
         bt_html = f"""
       <div class="stats">
-        <div><b>{bt['n']}</b><span>paris simulés (12 derniers mois)</span></div>
+        <div><b>{bt['n']}</b><span>paris simulés sur les 12 derniers mois</span></div>
         <div><b>{pct(bt['hit_rate'])}</b><span>taux de réussite</span></div>
         <div><b>{bt['avg_odds']:.2f}</b><span>cote moyenne</span></div>
         <div><b class="{'pos' if bt['roi_flat'] >= 0 else 'neg'}">{bt['roi_flat'] * 100:+.1f} %</b><span>ROI mise fixe</span></div>
@@ -93,7 +94,7 @@ h1 {{ margin:0 0 4px; font-size:28px }} h2 {{ margin:40px 0 12px; font-size:20px
 .pick {{ background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px }}
 .pick-top {{ display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--mute) }}
 .pick h3 {{ margin:8px 0 4px; font-size:17px }} .vs {{ color:var(--mute); font-weight:400; font-size:13px }}
-.bet {{ margin:0 0 10px; font-size:16px }} .bet strong {{ color:var(--acc) }}
+.bet {{ margin:0 0 10px; font-size:16px }} .bet strong {{ color:var(--acc) }} .book {{ font-size:13px; color:var(--mute) }}
 dl {{ display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:0 0 10px }}
 dt {{ font-size:12px; color:var(--mute) }} dd {{ margin:0; font-weight:600 }}
 .pos {{ color:var(--acc) }} .neg {{ color:var(--neg) }}
@@ -131,7 +132,12 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
     <th>1</th><th>N</th><th>2</th><th>+2,5</th><th>Les 2 marquent</th></tr></thead>
     <tbody>{table}</tbody></table></div>
 
-  <footer>Méthode : modèle de Poisson (Dixon-Coles) sur 3 saisons de résultats pondérés dans le temps, mélangé à 35 % avec les
-  probabilités du marché. Un pari est retenu si l'avantage estimé dépasse 5 %. Mise : quart de Kelly, plafonnée à 3 %.
-  Données : football-data.co.uk. Généré le {e(generated_at)}.</footer>
+  <footer><p><b>Méthode des paris.</b> On calcule la probabilité « juste » de chaque issue à partir de la cote moyenne de tous
+  les bookmakers (marge retirée). Un pari est proposé quand un bookmaker offre une cote au moins 4 % au-dessus de cette valeur
+  juste : il est en retard sur le marché. Testé sur 2 saisons, c'est la seule approche qui a été positive ; notre modèle seul
+  perdait entre 5 et 13 %. La cote peut bouger avant que vous pariiez : vérifiez-la, et ne pariez pas si elle a baissé sous la cote juste.
+  Mise : quart de Kelly, plafonnée à 3 %.</p>
+  <p><b>Analyse des matchs.</b> Modèle de Poisson (Dixon-Coles) sur 3 saisons, matchs récents pondérés plus fort : buts attendus,
+  score probable, probabilités. La confiance est « élevée » quand le modèle va dans le même sens que le pari.</p>
+  <p>Données : football-data.co.uk. Généré le {e(generated_at)}.</p></footer>
 </main></body></html>"""

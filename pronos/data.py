@@ -84,6 +84,37 @@ def _num(row, *keys):
     return None
 
 
+# bookmakers nommés : (nom affiché, colonnes 1/N/2, colonnes +2,5/-2,5)
+BOOKS = [
+    ("Bet365", ("B365H", "B365D", "B365A"), ("B365>2.5", "B365<2.5")),
+    ("Pinnacle", ("PSH", "PSD", "PSA"), ("P>2.5", "P<2.5")),
+    ("Betfair Exchange", ("BFEH", "BFED", "BFEA"), ("BFE>2.5", "BFE<2.5")),
+    ("bwin", ("BWH", "BWD", "BWA"), ()),
+    ("William Hill", ("WHH", "WHD", "WHA"), ()),
+    ("Betfred", ("BFDH", "BFDD", "BFDA"), ()),
+    ("BetVictor", ("BVH", "BVD", "BVA"), ()),
+    ("Paddy Power", ("PPH", "PPD", "PPA"), ()),
+    ("Sky Bet", ("SKBH", "SKBD", "SKBA"), ()),
+    ("Interwetten", ("IWH", "IWD", "IWA"), ()),
+]
+EXCHANGE_COMMISSION = 0.05  # Betfair prélève ~5 % des gains
+
+
+def _best_books(row):
+    """Meilleure cote parmi les bookmakers nommés, pour chaque issue."""
+    best = {}
+    for name, hda, ou in BOOKS:
+        for k, col in list(zip(("H", "D", "A"), hda)) + list(zip(("O25", "U25"), ou)):
+            o = _num(row, col)
+            if not o:
+                continue
+            if name == "Betfair Exchange":
+                o = 1 + (o - 1) * (1 - EXCHANGE_COMMISSION)
+            if o > best.get(k, (0, ""))[0]:
+                best[k] = (round(o, 3), name)
+    return best
+
+
 def _parse_date(s: str) -> date | None:
     for fmt in ("%d/%m/%Y", "%d/%m/%y"):
         try:
@@ -116,6 +147,8 @@ def parse_csv(text: str, default_div: str | None = None) -> list[Match]:
             "O25_max": _num(row, "Max>2.5", "BbMx>2.5"),
             "U25_max": _num(row, "Max<2.5", "BbMx<2.5"),
         }
+        for k, (o, name) in _best_books(row).items():
+            odds[k + "_best"], odds[k + "_book"] = o, name
         out.append(Match(div, d, (row.get("Time") or "").strip(), home, away,
                          int(hg) if hg.isdigit() else None,
                          int(ag) if ag.isdigit() else None,

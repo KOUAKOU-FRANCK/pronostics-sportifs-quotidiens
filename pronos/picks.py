@@ -1,14 +1,18 @@
-"""Sélection des paris « value » : on parie seulement quand notre probabilité
-est nettement supérieure à celle implicite dans la cote du marché."""
+"""Sélection des paris « value ».
 
-MIN_EDGE = 0.05      # avantage minimum de 5 %
+Le backtest sur 2 saisons (voir research.py) a montré que notre modèle de Poisson seul
+ne bat PAS le marché. Ce qui a été positif : prendre la probabilité « juste » du consensus
+des bookmakers (cote moyenne, marge retirée) et parier quand UN bookmaker propose une cote
+nettement au-dessus (il est en retard sur le marché). Le modèle sert d'analyse, pas de signal."""
+
+MIN_EDGE = 0.04      # avantage minimum de 4 %
 MAX_EDGE = 0.25      # au-delà, c'est presque toujours une info manquante (blessure, rotation...)
 MIN_PROB = 0.25      # on évite les gros outsiders (variance énorme)
 MAX_ODDS = 5.0
 KELLY_FRACTION = 0.25
 MAX_STAKE = 0.03     # jamais plus de 3 % de la bankroll sur un pari
-BLEND = 0.35         # poids donné au marché dans la probabilité finale
-USE_MAX = False      # parier à la meilleure cote du marché plutôt qu'à la moyenne
+BLEND = 1.0          # poids du consensus du marché dans la probabilité (1.0 = modèle ignoré)
+PRICE = "best"       # cote jouée : "avg" moyenne, "max" max du marché, "best" meilleur bookmaker nommé
 
 MARKETS = {
     "H": "Victoire domicile", "D": "Match nul", "A": "Victoire extérieur",
@@ -27,7 +31,7 @@ def market_probs(odds):
     return out
 
 
-def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, use_max=USE_MAX):
+def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, price=PRICE):
     """Renvoie la liste des paris intéressants pour un match.
 
     On mélange notre modèle avec le marché (le marché est très bien informé :
@@ -35,7 +39,7 @@ def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, use_max=USE_MAX):
     mp = market_probs(odds)
     picks = []
     for k in MARKETS:
-        o = odds.get(k + "_max") if use_max else odds.get(k)
+        o = odds.get(k) if price == "avg" else odds.get(f"{k}_{price}")
         if not o or k not in mp:
             continue
         p = (1 - blend) * pred[k] + blend * mp[k]
@@ -45,14 +49,17 @@ def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, use_max=USE_MAX):
         kelly = edge / (o - 1)
         stake = min(KELLY_FRACTION * kelly, MAX_STAKE)
         picks.append({"market": k, "label": MARKETS[k], "odds": o, "prob": p,
-                      "fair": 1 / p, "edge": edge, "stake": stake})
+                      "fair": 1 / p, "edge": edge, "stake": stake,
+                      "book": odds.get(k + "_book") if price == "best" else None,
+                      "model_prob": pred[k], "avg_odds": odds.get(k)})
     return picks
 
 
 def confidence(p):
-    edge, prob = p["edge"], p["prob"]
-    if edge >= 0.10 and prob >= 0.45:
+    """Plus d'avantage, et le modèle d'accord avec le pari = plus de confiance."""
+    agrees = p["model_prob"] >= p["prob"]
+    if p["edge"] >= 0.06 and agrees:
         return "Élevée"
-    if edge >= 0.07 or prob >= 0.5:
+    if p["edge"] >= 0.06 or agrees:
         return "Moyenne"
     return "Faible"

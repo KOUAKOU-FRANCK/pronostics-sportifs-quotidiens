@@ -246,5 +246,26 @@
   "result": null,
   "profit": null,
   "elo_agree": null
+ },
+ {
+  "id": "basketball_nba|fd0625e5807950edc0d2d31772639859|Charlotte Hornets",
+  "sport": "NBA",
+  "sport_key": "basketball_nba",
+  "event_id": "fd0625e5807950edc0d2d31772639859",
+  "start": "2026-10-23T23:10:00Z",
+  "home": "Charlotte Hornets",
+  "away": "Atlanta Hawks",
+  "outcome": "Charlotte Hornets",
+  "label": "Victoire Charlotte Hornets",
+  "odds": 2.3,
+  "book": "Unibet (SE)",
+  "prob": 0.4441,
+  "edge": 0.0215,
+  "stake": 0.0041,
+  "added": "2026-10-22",
+  "status": "en attente",
+  "result": null,
+  "profit": null,
+  "elo_agree": null
  }
 ]

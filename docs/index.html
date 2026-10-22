@@ -1,242 +1,1075 @@
 <!doctype html>
 <html lang="fr"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Pronos du jour</title>
+<title>Pronostics du jour</title>
 <style>
-:root { --bg:#f6f7f9; --card:#fff; --ink:#15181e; --mute:#5d6573; --line:#e3e6eb; --acc:#0b7a4b; --neg:#b42318; --hl:#e6f4ec; }
-@media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --ink:#e8eaee; --mute:#9aa3b2; --line:#2a2f38; --acc:#3fcf8e; --neg:#ff6b5e; --hl:#163326; } }
+:root { --bg:#f6f7f9; --card:#fff; --ink:#15181e; --mute:#5d6573; --line:#e3e6eb; --acc:#0b7a4b; --neg:#b42318; --hl:#e6f4ec; --warn:#fff6e0; }
+@media (prefers-color-scheme: dark) { :root { --bg:#0f1115; --card:#181b21; --ink:#e8eaee; --mute:#9aa3b2; --line:#2a2f38; --acc:#3fcf8e; --neg:#ff6b5e; --hl:#163326; --warn:#2a2416; } }
 * { box-sizing:border-box }
 body { margin:0; background:var(--bg); color:var(--ink); font:15px/1.5 system-ui,-apple-system,Segoe UI,Roboto,sans-serif }
-main { max-width:1100px; margin:0 auto; padding:24px 16px 64px }
-h1 { margin:0 0 4px; font-size:28px } h2 { margin:40px 0 12px; font-size:20px }
+main { max-width:1000px; margin:0 auto; padding:24px 16px 64px }
+h1 { margin:0 0 4px; font-size:28px } h2 { margin:36px 0 12px; font-size:21px }
+h3.day { margin:28px 0 8px; font-size:18px } h4 { margin:16px 0 6px; font-size:14px; color:var(--mute); text-transform:uppercase; letter-spacing:.03em }
 .sub { color:var(--mute); margin:0 }
-.warn { background:var(--card); border:1px solid var(--line); border-left:4px solid #d4a017; padding:12px 16px; border-radius:8px; margin:20px 0; color:var(--mute); font-size:14px }
-.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(300px,1fr)); gap:14px }
-.pick { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:16px }
+.how { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 18px; margin:18px 0 }
+.how ol { margin:6px 0 0; padding-left:20px } .how li { margin:4px 0 }
+.warn { background:var(--warn); border-radius:8px; padding:10px 14px; margin:12px 0; color:var(--mute); font-size:13px }
+.grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(280px,1fr)); gap:12px }
+.pick { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:14px 16px }
 .pick-top { display:flex; justify-content:space-between; gap:8px; font-size:12px; color:var(--mute) }
-.pick h3 { margin:8px 0 4px; font-size:17px } .vs { color:var(--mute); font-weight:400; font-size:13px }
-.mine { margin:0 0 10px; font-size:13px; padding:6px 8px; border-radius:6px; background:var(--hl) }
-.bet { margin:0 0 10px; font-size:16px } .bet strong { color:var(--acc) } .book { font-size:13px; color:var(--mute) }
-dl { display:grid; grid-template-columns:1fr 1fr; gap:6px 12px; margin:0 0 10px }
-dt { font-size:12px; color:var(--mute) } dd { margin:0; font-weight:600 }
-.pos { color:var(--acc) } .neg { color:var(--neg) }
-.conf { display:inline-block; font-size:12px; padding:2px 8px; border-radius:99px; border:1px solid var(--line) }
-.conf-elevee { background:var(--hl); color:var(--acc); border-color:transparent }
+.pick h3 { margin:6px 0 6px; font-size:17px } .vs { color:var(--mute); font-weight:400; font-size:13px }
+.bet { margin:0 0 6px; font-size:17px; font-weight:700; color:var(--acc) }
+.line { margin:0 0 6px } .small { font-size:12px; color:var(--mute) }
+.mine { margin:0 0 8px; font-size:14px; padding:8px 10px; border-radius:8px; background:var(--hl) }
+.tag { font-size:11px; padding:1px 7px; border-radius:99px; border:1px solid var(--line) }
+.tag-hi { background:var(--hl); color:var(--acc); border-color:transparent }
 .empty { color:var(--mute) }
-.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px }
+.search { width:100%; padding:10px 12px; border-radius:10px; border:1px solid var(--line); background:var(--card); color:var(--ink); font-size:15px; margin:4px 0 4px }
+.list { background:var(--card); border:1px solid var(--line); border-radius:12px }
+.row { display:grid; grid-template-columns:48px 1fr auto; gap:10px; padding:10px 12px; border-bottom:1px solid var(--line); align-items:start }
+.row:last-child { border-bottom:0 }
+.row .t { font-variant-numeric:tabular-nums; color:var(--mute); padding-top:1px }
+.row .teams { font-size:13px; color:var(--mute) } .row .pr { margin:2px 0 }
+.mini { text-align:right; min-width:64px } .mini span { display:block; font-size:11px; color:var(--mute) }
+.mini b { font-size:19px; font-variant-numeric:tabular-nums }
+.tbl { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:12px }
+table { border-collapse:collapse; width:100%; font-size:14px }
+th, td { padding:8px 10px; border-bottom:1px solid var(--line); text-align:left; vertical-align:top }
+th { font-size:12px; color:var(--mute); font-weight:600; white-space:nowrap }
+td.num { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap } td.big { font-size:17px; font-weight:700 }
+td.teams { min-width:140px } td small { display:block; color:var(--mute); font-size:11px }
+.stats { display:grid; grid-template-columns:repeat(auto-fit,minmax(150px,1fr)); gap:10px; margin:8px 0 }
 .stats div { background:var(--card); border:1px solid var(--line); border-radius:10px; padding:12px }
 .stats b { display:block; font-size:22px } .stats span { font-size:12px; color:var(--mute) }
-.markets { color:var(--mute); font-size:14px }
-.tbl { overflow-x:auto; background:var(--card); border:1px solid var(--line); border-radius:12px }
-table { border-collapse:collapse; width:100%; font-size:13px; white-space:nowrap }
-th, td { padding:7px 10px; border-bottom:1px solid var(--line); text-align:left }
-th { font-size:12px; color:var(--mute); font-weight:600 }
-td.num { text-align:right; font-variant-numeric:tabular-nums } td small { display:block; color:var(--mute); font-size:11px }
-td.hl { background:var(--hl); font-weight:600 }
-footer { margin-top:40px; color:var(--mute); font-size:13px }
+.pos { color:var(--acc) } .neg { color:var(--neg) }
+details { background:var(--card); border:1px solid var(--line); border-radius:12px; padding:12px 16px; margin:10px 0 }
+summary { cursor:pointer; font-weight:600 }
+details[open] summary { margin-bottom:10px }
+.conf { display:inline-block; font-size:12px; padding:2px 8px; border-radius:99px; border:1px solid var(--line) }
+footer { margin-top:30px; color:var(--mute); font-size:12px }
 </style></head><body><main>
-  <h1>Pronos du jour</h1>
-  <p class="sub">jeudi 22 octobre 2026 · 0 matchs analysés dans 0 championnats</p>
-  <div class="warn">Ces pronostics sont des estimations statistiques, pas des certitudes. Aucun modèle ne garantit des gains :
-  même un bon modèle perd souvent sur de longues séries. Ne misez que de l'argent que vous pouvez perdre, fixez-vous une limite,
-  et n'essayez jamais de « vous refaire ». Aide : joueurs-info-service.fr · 09 74 75 13 13.</div>
+  <h1>Pronostics du jour</h1>
+  <p class="sub">jeudi 22 octobre 2026 · 171 matchs dans 33 compétitions · heures de Côte d'Ivoire (GMT)</p>
 
-  <h2>Meilleurs paris value</h2>
-  <div class="grid"><p class="empty">Aucun pari ne passe nos filtres aujourd'hui. Ne pas parier est aussi une décision gagnante.</p></div>
+  <div class="how"><b>Comment s'en servir</b>
+    <ol>
+      <li>Lis le <b>pronostic</b> du match et ses <b>chances</b> (probabilité que ça arrive).</li>
+      <li>Sur Bet360, regarde la cote de ce pronostic.</li>
+      <li>Si la cote Bet360 est <b>égale ou plus haute</b> que la « cote mini » du site, le pari est intéressant. Sinon, passe : la cote ne paie pas assez le risque.</li>
+    </ol>
+    <div class="warn">Un pronostic à 60 % de chances perd quand même 4 fois sur 10. Aucun site ne garantit de gagner : ne mise que ce que tu peux perdre.</div>
+  </div>
 
-  <h2>Cotes minimum à chercher sur Bet360</h2>
-  <p class="sub">Les cotes de Bet360 ne sont pas dans nos données. Pour chaque issue, voici la cote à partir de laquelle
-  le pari devient intéressant (cote juste du marché + 2 %). Si Bet360 propose une cote égale ou
-  supérieure, c'est un pari value ; sinon, passez.</p>
-  <div class="tbl" style="margin-top:14px"><table>
-    <thead><tr><th>Date</th><th>Sport</th><th>Match</th><th>Cote minimum par issue</th></tr></thead>
-    <tbody><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">FC Ararat-Armenia – AZ Alkmaar</td><td>AZ Alkmaar <b>1.51</b> · Nul <b>5.25</b> · FC Ararat-Armenia <b>7.95</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">OFI Crete – Bayer Leverkusen</td><td>Bayer Leverkusen <b>1.28</b> · Nul <b>7.88</b> · OFI Crete <b>13.95</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">Dinamo Zagreb – NEC Nijmegen</td><td>Dinamo Zagreb <b>1.66</b> · Nul <b>4.82</b> · NEC Nijmegen <b>5.92</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">Ferencváros TC – Torreense</td><td>Nul <b>5.16</b> · Ferencváros TC <b>1.52</b> · Torreense <b>7.77</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">Union Saint-Gilloise – Hapoel Be&#x27;er Sheva</td><td>Nul <b>5.17</b> · Hapoel Be&#x27;er Sheva <b>7.16</b> · Union Saint-Gilloise <b>1.54</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">Juventus – Rennes</td><td>Nul <b>5.06</b> · Juventus <b>1.54</b> · Rennes <b>7.42</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">Lech Poznań – Sunderland</td><td>Nul <b>4.06</b> · Lech Poznań <b>4.38</b> · Sunderland <b>1.98</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa League</td><td class="teams">SK Sturm Graz – Marseille</td><td>Nul <b>3.90</b> · Marseille <b>2.40</b> · SK Sturm Graz <b>3.25</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">FK Jablonec – Brighton and Hove Albion</td><td>Brighton and Hove Albion <b>1.28</b> · Nul <b>7.59</b> · FK Jablonec <b>14.25</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">Red Star Belgrade – FC Copenhagen</td><td>Nul <b>3.79</b> · FC Copenhagen <b>3.43</b> · Red Star Belgrade <b>2.35</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">FC Iberia 1999 – Mjällby AIF</td><td>Nul <b>3.52</b> · FC Iberia 1999 <b>2.94</b> · Mjällby AIF <b>2.80</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">Getafe – FC Lugano</td><td>Nul <b>3.42</b> · FC Lugano <b>3.77</b> · Getafe <b>2.37</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">FC Nordsjaelland – PFC CSKA Sofia</td><td>Nul <b>5.31</b> · FC Nordsjaelland <b>1.51</b> · PFC CSKA Sofia <b>7.65</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">FK Kauno Žalgiris – SK Brann</td><td>Nul <b>4.01</b> · FK Kauno Žalgiris <b>4.83</b> · SK Brann <b>1.91</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">Trabzonspor – Hearts</td><td>Nul <b>6.16</b> · Hearts <b>8.41</b> · Trabzonspor <b>1.43</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">Inter Club d&#x27;Escaldes – Universitatea Craiova</td><td>Nul <b>4.67</b> · Inter Club d&#x27;Escaldes <b>6.97</b> · Universitatea Craiova <b>1.61</b></td></tr><tr><td>jeudi 22 octobre 2026 18:45</td><td>UEFA Europa Conference League</td><td class="teams">Pafos FC – Riga FC</td><td>Nul <b>3.92</b> · Pafos FC <b>2.07</b> · Riga FC <b>4.12</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">Örebro HK – Brynäs IF</td><td>Brynäs IF <b>1.75</b> · Örebro HK <b>2.44</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">Skellefteå AIK – Djurgårdens IF</td><td>Djurgårdens IF <b>4.54</b> · Skellefteå AIK <b>1.32</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">Rögle BK – Frölunda HC</td><td>Frölunda HC <b>2.23</b> · Rögle BK <b>1.88</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">Timrå IK – Färjestad BK</td><td>Färjestad BK <b>1.63</b> · Timrå IK <b>2.72</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">IF Björklöven – Malmö Redhawks</td><td>IF Björklöven <b>2.43</b> · Malmö Redhawks <b>1.76</b></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td><td>SHL</td><td class="teams">Växjö Lakers – Luleå HF</td><td>Luleå HF <b>2.37</b> · Växjö Lakers <b>1.79</b></td></tr><tr><td>jeudi 22 octobre 2026 19:30</td><td>Basketball Euroleague</td><td class="teams">Anadolu Efes – Beşiktaş J.K.</td><td>Anadolu Efes <b>1.59</b> · Beşiktaş J.K. <b>2.83</b></td></tr><tr><td>jeudi 22 octobre 2026 20:00</td><td>Basketball Euroleague</td><td class="teams">FC Bayern München – Dubai Basketball</td><td>Dubai Basketball <b>1.89</b> · FC Bayern München <b>2.21</b></td></tr><tr><td>jeudi 22 octobre 2026 20:05</td><td>Basketball Euroleague</td><td class="teams">Maccabi Tel Aviv – Real Madrid</td><td>Maccabi Tel Aviv <b>2.71</b> · Real Madrid <b>1.63</b></td></tr><tr><td>jeudi 22 octobre 2026 20:15</td><td>Basketball Euroleague</td><td class="teams">Panathinaikos – Saski Baskonia</td><td>Panathinaikos <b>1.15</b> · Saski Baskonia <b>9.04</b></td></tr><tr><td>jeudi 22 octobre 2026 20:30</td><td>Basketball Euroleague</td><td class="teams">Pallacanestro Olimpia Milano – FC Barcelona Bàsquet</td><td>FC Barcelona Bàsquet <b>2.22</b> · Pallacanestro Olimpia Milano <b>1.89</b></td></tr><tr><td>jeudi 22 octobre 2026 20:45</td><td>Basketball Euroleague</td><td class="teams">KK Partizan NIS – KK Crvena zvezda</td><td>KK Crvena zvezda <b>2.02</b> · KK Partizan NIS <b>2.06</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Bournemouth – AC Milan</td><td>AC Milan <b>4.21</b> · Bournemouth <b>2.00</b> · Nul <b>4.12</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Jagiellonia Białystok – Anderlecht</td><td>Anderlecht <b>2.41</b> · Nul <b>3.82</b> · Jagiellonia Białystok <b>3.29</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Omonoia FC – Benfica</td><td>Benfica <b>1.41</b> · Nul <b>6.04</b> · Omonoia FC <b>9.39</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Besiktas JK – Crystal Palace</td><td>Besiktas JK <b>2.35</b> · Crystal Palace <b>3.30</b> · Nul <b>3.98</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Celtic – Celta Vigo</td><td>Celta Vigo <b>3.01</b> · Celtic <b>2.59</b> · Nul <b>3.81</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Lillestrom – Real Sociedad</td><td>Nul <b>5.47</b> · Lillestrom <b>7.04</b> · Real Sociedad <b>1.53</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">TSG Hoffenheim – Lyon</td><td>Nul <b>4.36</b> · Lyon <b>3.50</b> · TSG Hoffenheim <b>2.15</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">NK Celje – Salzburg</td><td>Nul <b>4.90</b> · NK Celje <b>6.34</b> · Salzburg <b>1.62</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Olympiakos Piraeus – Sparta Prague</td><td>Nul <b>4.74</b> · Olympiakos Piraeus <b>1.60</b> · Sparta Prague <b>6.84</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa League</td><td class="teams">Viktoria Plzeň – PFC Levski Sofia</td><td>Nul <b>4.21</b> · PFC Levski Sofia <b>5.06</b> · Viktoria Plzeň <b>1.83</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">AGF Aarhus – KF Egnatia</td><td>AGF Aarhus <b>1.59</b> · Nul <b>4.77</b> · KF Egnatia <b>7.02</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">AS Monaco – SC Freiburg</td><td>AS Monaco <b>2.32</b> · Nul <b>3.86</b> · SC Freiburg <b>3.45</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">Ajax – Atalanta BC</td><td>Ajax <b>2.17</b> · Atalanta BC <b>3.52</b> · Nul <b>4.26</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">FC Midtjylland – Sint Truiden</td><td>Nul <b>4.28</b> · FC Midtjylland <b>1.87</b> · Sint Truiden <b>4.70</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">FC Thun – Hajduk Split</td><td>Nul <b>4.00</b> · FC Thun <b>3.01</b> · Hajduk Split <b>2.51</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">Lincoln Red Imps FC – FC Twente Enschede</td><td>Nul <b>8.09</b> · FC Twente Enschede <b>1.26</b> · Lincoln Red Imps FC <b>15.92</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">FK Borac Banja Luka – KuPS Kuopio</td><td>Nul <b>3.96</b> · FK Borac Banja Luka <b>1.91</b> · KuPS Kuopio <b>4.93</b></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td><td>UEFA Europa Conference League</td><td class="teams">SC Braga – Gent</td><td>Nul <b>3.74</b> · Gent <b>4.37</b> · SC Braga <b>2.07</b></td></tr><tr><td>vendredi 23 octobre 2026 01:00</td><td>NCAAF</td><td class="teams">Appalachian State Mountaineers – James Madison Dukes</td><td>Appalachian State Mountaineers <b>4.86</b> · James Madison Dukes <b>1.29</b></td></tr><tr><td>vendredi 23 octobre 2026 01:00</td><td>NCAAF</td><td class="teams">Kennesaw State Owls – Liberty Flames</td><td>Kennesaw State Owls <b>4.18</b> · Liberty Flames <b>1.35</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NBA</td><td class="teams">Philadelphia 76ers – Cleveland Cavaliers</td><td>Cleveland Cavaliers <b>2.36</b> · Philadelphia 76ers <b>1.79</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NHL</td><td class="teams">New Jersey Devils – Anaheim Ducks</td><td>Anaheim Ducks <b>2.91</b> · New Jersey Devils <b>1.57</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NHL</td><td class="teams">Boston Bruins – Nashville Predators</td><td>Boston Bruins <b>1.80</b> · Nashville Predators <b>2.35</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NHL</td><td class="teams">Pittsburgh Penguins – Florida Panthers</td><td>Florida Panthers <b>2.10</b> · Pittsburgh Penguins <b>1.98</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NHL</td><td class="teams">Toronto Maple Leafs – New York Rangers</td><td>New York Rangers <b>2.02</b> · Toronto Maple Leafs <b>2.06</b></td></tr><tr><td>vendredi 23 octobre 2026 01:10</td><td>NHL</td><td class="teams">Ottawa Senators – San Jose Sharks</td><td>Ottawa Senators <b>1.85</b> · San Jose Sharks <b>2.28</b></td></tr><tr><td>vendredi 23 octobre 2026 01:30</td><td>NCAAF</td><td class="teams">Memphis Tigers – East Carolina Pirates</td><td>East Carolina Pirates <b>4.44</b> · Memphis Tigers <b>1.32</b></td></tr><tr><td>vendredi 23 octobre 2026 01:40</td><td>NHL</td><td class="teams">New York Islanders – Los Angeles Kings</td><td>Los Angeles Kings <b>2.03</b> · New York Islanders <b>2.05</b></td></tr><tr><td>vendredi 23 octobre 2026 02:10</td><td>NHL</td><td class="teams">Dallas Stars – Winnipeg Jets</td><td>Dallas Stars <b>1.60</b> · Winnipeg Jets <b>2.82</b></td></tr><tr><td>vendredi 23 octobre 2026 02:10</td><td>NHL</td><td class="teams">St Louis Blues – Vegas Golden Knights</td><td>St Louis Blues <b>2.18</b> · Vegas Golden Knights <b>1.91</b></td></tr><tr><td>vendredi 23 octobre 2026 02:15</td><td>NFL</td><td class="teams">Chicago Bears – New England Patriots</td><td>Chicago Bears <b>1.73</b> · New England Patriots <b>2.48</b></td></tr><tr><td>vendredi 23 octobre 2026 02:30</td><td>Copa Libertadores</td><td class="teams">Flamengo-RJ – Estudiantes La Plata</td><td>Nul <b>5.78</b> · Estudiantes La Plata <b>13.40</b> · Flamengo-RJ <b>1.36</b></td></tr><tr><td>vendredi 23 octobre 2026 03:10</td><td>NHL</td><td class="teams">Calgary Flames – Minnesota Wild</td><td>Calgary Flames <b>2.83</b> · Minnesota Wild <b>1.60</b></td></tr><tr><td>vendredi 23 octobre 2026 03:10</td><td>NHL</td><td class="teams">Edmonton Oilers – Carolina Hurricanes</td><td>Carolina Hurricanes <b>1.95</b> · Edmonton Oilers <b>2.14</b></td></tr><tr><td>vendredi 23 octobre 2026 03:40</td><td>NBA</td><td class="teams">Oklahoma City Thunder – Denver Nuggets</td><td>Denver Nuggets <b>3.83</b> · Oklahoma City Thunder <b>1.39</b></td></tr><tr><td>vendredi 23 octobre 2026 04:10</td><td>NHL</td><td class="teams">Vancouver Canucks – Detroit Red Wings</td><td>Detroit Red Wings <b>1.71</b> · Vancouver Canucks <b>2.52</b></td></tr><tr><td>vendredi 23 octobre 2026 04:10</td><td>NHL</td><td class="teams">Seattle Kraken – Utah Mammoth</td><td>Seattle Kraken <b>2.59</b> · Utah Mammoth <b>1.68</b></td></tr><tr><td>vendredi 23 octobre 2026 07:00</td><td>WTA Ningbo Open</td><td class="teams">Sara Bejlek – Marie Bouzkova</td><td>Marie Bouzkova <b>1.71</b> · Sara Bejlek <b>2.53</b></td></tr><tr><td>vendredi 23 octobre 2026 08:30</td><td>WTA Ningbo Open</td><td class="teams">Leylah Fernandez – Ekaterina Alexandrova</td><td>Ekaterina Alexandrova <b>1.83</b> · Leylah Fernandez <b>2.30</b></td></tr><tr><td>vendredi 23 octobre 2026 10:00</td><td>WTA Ningbo Open</td><td class="teams">Iva Jović – Diana Shnaider</td><td>Diana Shnaider <b>2.03</b> · Iva Jović <b>2.05</b></td></tr><tr><td>vendredi 23 octobre 2026 11:00</td><td>A-League</td><td class="teams">Brisbane Roar – Perth Glory</td><td>Brisbane Roar <b>2.29</b> · Nul <b>3.79</b> · Perth Glory <b>3.56</b></td></tr><tr><td>vendredi 23 octobre 2026 13:00</td><td>WTA Ningbo Open</td><td class="teams">Elena Rybakina – Katarzyna Kawa</td><td>Elena Rybakina <b>1.11</b> · Katarzyna Kawa <b>12.52</b></td></tr><tr><td>vendredi 23 octobre 2026 15:30</td><td>Saudi Pro League</td><td class="teams">Al-Faisaly KSA FC – Al-Nassr</td><td>Al-Faisaly KSA FC <b>10.12</b> · Al-Nassr <b>1.36</b> · Nul <b>6.80</b></td></tr><tr><td>vendredi 23 octobre 2026 17:30</td><td>Saudi Pro League</td><td class="teams">Al-Ittihad – Diriyah Club</td><td>Al-Ittihad <b>2.13</b> · Diriyah Club <b>3.65</b> · Nul <b>4.21</b></td></tr><tr><td>vendredi 23 octobre 2026 18:00</td><td>Ekstraklasa - Poland</td><td class="teams">Motor Lublin – Zagłębie Lubin</td><td>Nul <b>3.83</b> · Motor Lublin <b>2.17</b> · Zagłębie Lubin <b>3.87</b></td></tr><tr><td>vendredi 23 octobre 2026 18:30</td><td>Premier League - Russia</td><td class="teams">FC Akhmat Grozny – Gazovik Orenburg</td><td>Nul <b>3.80</b> · FC Akhmat Grozny <b>2.14</b> · Gazovik Orenburg <b>3.99</b></td></tr><tr><td>vendredi 23 octobre 2026 18:30</td><td>Frauen-Bundesliga</td><td class="teams">RB Leipzig – Bayern Munich</td><td>Bayern Munich <b>1.28</b> · Nul <b>7.98</b> · RB Leipzig <b>13.41</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>Basketball Euroleague</td><td class="teams">Žalgiris – ASVEL Lyon Villeurbanne</td><td>ASVEL Lyon Villeurbanne <b>4.75</b> · Žalgiris <b>1.30</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>3. Liga - Germany</td><td class="teams">Rot-Weiss Essen – Jahn Regensburg</td><td>Nul <b>4.67</b> · Jahn Regensburg <b>4.92</b> · Rot-Weiss Essen <b>1.78</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>Allsvenskan - Sweden</td><td class="teams">Västerås SK – Halmstads BK</td><td>Nul <b>4.30</b> · Halmstads BK <b>5.03</b> · Västerås SK <b>1.82</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>Allsvenskan - Sweden</td><td class="teams">IF Elfsborg – Malmo FF</td><td>Nul <b>3.90</b> · IF Elfsborg <b>2.24</b> · Malmo FF <b>3.59</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>Superettan - Sweden</td><td class="teams">IK Oddevold – GIF Sundsvall</td><td>Nul <b>5.36</b> · GIF Sundsvall <b>7.95</b> · IK Oddevold <b>1.50</b></td></tr><tr><td>vendredi 23 octobre 2026 19:00</td><td>Denmark Superliga</td><td class="teams">Randers FC – Brondby IF</td><td>Brondby IF <b>2.12</b> · Nul <b>4.04</b> · Randers FC <b>3.82</b></td></tr><tr><td>vendredi 23 octobre 2026 19:30</td><td>Austrian Football Bundesliga</td><td class="teams">Rheindorf Altach – Austria Wien</td><td>Austria Wien <b>3.44</b> · Nul <b>3.77</b> · Rheindorf Altach <b>2.36</b></td></tr><tr><td>vendredi 23 octobre 2026 20:00</td><td>Saudi Pro League</td><td class="teams">Al-Qadsiah – Al-Hilal</td><td>Al-Hilal <b>2.20</b> · Al-Qadsiah <b>3.48</b> · Nul <b>4.17</b></td></tr><tr><td>vendredi 23 octobre 2026 20:15</td><td>Basketball Euroleague</td><td class="teams">Olympiacos – Fenerbahce SK</td><td>Fenerbahce SK <b>2.34</b> · Olympiacos <b>1.81</b></td></tr><tr><td>vendredi 23 octobre 2026 20:30</td><td>Ekstraklasa - Poland</td><td class="teams">Widzew Łódź – Górnik Zabrze</td><td>Nul <b>3.64</b> · Górnik Zabrze <b>2.62</b> · Widzew Łódź <b>3.08</b></td></tr><tr><td>vendredi 23 octobre 2026 20:45</td><td>Basketball Euroleague</td><td class="teams">Paris Basketball – Valencia Basket</td><td>Paris Basketball <b>2.82</b> · Valencia Basket <b>1.60</b></td></tr><tr><td>vendredi 23 octobre 2026 20:45</td><td>League of Ireland</td><td class="teams">Bohemians – Shelbourne Dublin</td><td>Bohemians <b>1.75</b> · Nul <b>4.48</b> · Shelbourne Dublin <b>5.36</b></td></tr><tr><td>vendredi 23 octobre 2026 20:45</td><td>League of Ireland</td><td class="teams">Derry City – Dundalk</td><td>Derry City <b>1.96</b> · Nul <b>4.16</b> · Dundalk <b>4.34</b></td></tr><tr><td>vendredi 23 octobre 2026 20:45</td><td>League of Ireland</td><td class="teams">Waterford FC – Drogheda United</td><td>Nul <b>4.00</b> · Drogheda United <b>4.06</b> · Waterford FC <b>2.06</b></td></tr><tr><td>vendredi 23 octobre 2026 20:45</td><td>League of Ireland</td><td class="teams">Galway United – St Patricks Athletic</td><td>Nul <b>4.31</b> · Galway United <b>5.36</b> · St Patricks Athletic <b>1.78</b></td></tr><tr><td>vendredi 23 octobre 2026 21:00</td><td>League of Ireland</td><td class="teams">Shamrock Rovers – Sligo Rovers</td><td>Nul <b>8.32</b> · Shamrock Rovers <b>1.25</b> · Sligo Rovers <b>16.25</b></td></tr><tr><td>vendredi 23 octobre 2026 22:10</td><td>NBA</td><td class="teams">Milwaukee Bucks – Chicago Bulls</td><td>Chicago Bulls <b>2.09</b> · Milwaukee Bucks <b>1.99</b></td></tr><tr><td>vendredi 23 octobre 2026 23:00</td><td>Primera División - Argentina</td><td class="teams">Gimnasia La Plata – Sarmiento de Junin</td><td>Nul <b>3.96</b> · Gimnasia La Plata <b>1.81</b> · Sarmiento de Junin <b>5.69</b></td></tr><tr><td>vendredi 23 octobre 2026 23:30</td><td>Primera División - Argentina</td><td class="teams">Gimnasia Mendoza – Platense</td><td>Nul <b>3.30</b> · Gimnasia Mendoza <b>2.36</b> · Platense <b>3.94</b></td></tr><tr><td>samedi 24 octobre 2026 00:30</td><td>Brazil Série B</td><td class="teams">Operario PR – Athletic Club (MG)</td><td>Athletic Club (MG) <b>4.51</b> · Nul <b>3.68</b> · Operario PR <b>2.05</b></td></tr><tr><td>samedi 24 octobre 2026 01:00</td><td>Primera División - Chile</td><td class="teams">Audax Italiano – Huachipato</td><td>Audax Italiano <b>2.23</b> · Nul <b>3.79</b> · Huachipato <b>3.74</b></td></tr><tr><td>samedi 24 octobre 2026 01:00</td><td>Brazil Série A</td><td class="teams">Cruzeiro – Remo</td><td>Cruzeiro <b>1.48</b> · Nul <b>5.54</b> · Remo <b>8.12</b></td></tr><tr><td>samedi 24 octobre 2026 01:00</td><td>NCAAF</td><td class="teams">Virginia Cavaliers – Duke Blue Devils</td><td>Duke Blue Devils <b>2.20</b> · Virginia Cavaliers <b>1.90</b></td></tr><tr><td>samedi 24 octobre 2026 01:00</td><td>NCAAF</td><td class="teams">UConn Huskies – UMass Minutemen</td><td>UConn Huskies <b>1.22</b> · UMass Minutemen <b>6.30</b></td></tr><tr><td>samedi 24 octobre 2026 01:10</td><td>NBA</td><td class="teams">Charlotte Hornets – Atlanta Hawks</td><td>Atlanta Hawks <b>1.81</b> · Charlotte Hornets <b>2.34</b></td></tr><tr><td>samedi 24 octobre 2026 01:10</td><td>NBA</td><td class="teams">Boston Celtics – New York Knicks</td><td>Boston Celtics <b>1.86</b> · New York Knicks <b>2.26</b></td></tr><tr><td>samedi 24 octobre 2026 01:10</td><td>NBA</td><td class="teams">Indiana Pacers – Dallas Mavericks</td><td>Dallas Mavericks <b>2.95</b> · Indiana Pacers <b>1.56</b></td></tr><tr><td>samedi 24 octobre 2026 01:10</td><td>NBA</td><td class="teams">Orlando Magic – Minnesota Timberwolves</td><td>Minnesota Timberwolves <b>1.93</b> · Orlando Magic <b>2.17</b></td></tr><tr><td>samedi 24 octobre 2026 01:10</td><td>NBA</td><td class="teams">Washington Wizards – Toronto Raptors</td><td>Toronto Raptors <b>1.62</b> · Washington Wizards <b>2.76</b></td></tr><tr><td>samedi 24 octobre 2026 02:00</td><td>MLB</td><td class="teams">Milwaukee Brewers – Tampa Bay Rays</td><td>Milwaukee Brewers <b>1.71</b> · Tampa Bay Rays <b>2.52</b></td></tr><tr><td>samedi 24 octobre 2026 02:00</td><td>Brazil Série B</td><td class="teams">Sport Recife – Criciuma</td><td>Criciuma <b>3.22</b> · Nul <b>3.52</b> · Sport Recife <b>2.60</b></td></tr><tr><td>samedi 24 octobre 2026 02:10</td><td>NBA</td><td class="teams">Miami Heat – Detroit Pistons</td><td>Detroit Pistons <b>2.19</b> · Miami Heat <b>1.91</b></td></tr><tr><td>samedi 24 octobre 2026 02:15</td><td>Primera División - Argentina</td><td class="teams">CA Tigre BA – Atlético Tucuman</td><td>Atlético Tucuman <b>5.93</b> · CA Tigre BA <b>1.83</b> · Nul <b>3.77</b></td></tr><tr><td>samedi 24 octobre 2026 02:30</td><td>NCAAF</td><td class="teams">Tulsa Golden Hurricane – Army Black Knights</td><td>Army Black Knights <b>2.15</b> · Tulsa Golden Hurricane <b>1.94</b></td></tr><tr><td>samedi 24 octobre 2026 03:00</td><td>Liga MX</td><td class="teams">Necaxa – FC Juárez</td><td>Nul <b>4.25</b> · FC Juárez <b>4.64</b> · Necaxa <b>1.89</b></td></tr><tr><td>samedi 24 octobre 2026 03:00</td><td>NCAAF</td><td class="teams">Wyoming Cowboys – Air Force Falcons</td><td>Air Force Falcons <b>1.57</b> · Wyoming Cowboys <b>2.90</b></td></tr><tr><td>samedi 24 octobre 2026 03:40</td><td>NBA</td><td class="teams">San Antonio Spurs – Houston Rockets</td><td>Houston Rockets <b>3.11</b> · San Antonio Spurs <b>1.52</b></td></tr><tr><td>samedi 24 octobre 2026 03:40</td><td>NBA</td><td class="teams">Utah Jazz – New Orleans Pelicans</td><td>New Orleans Pelicans <b>2.54</b> · Utah Jazz <b>1.71</b></td></tr><tr><td>samedi 24 octobre 2026 04:10</td><td>NBA</td><td class="teams">Golden State Warriors – Memphis Grizzlies</td><td>Golden State Warriors <b>1.71</b> · Memphis Grizzlies <b>2.54</b></td></tr><tr><td>samedi 24 octobre 2026 04:10</td><td>NBA</td><td class="teams">Los Angeles Lakers – Los Angeles Clippers</td><td>Los Angeles Clippers <b>4.43</b> · Los Angeles Lakers <b>1.33</b></td></tr><tr><td>samedi 24 octobre 2026 04:10</td><td>NBA</td><td class="teams">Sacramento Kings – Portland Trail Blazers</td><td>Portland Trail Blazers <b>1.46</b> · Sacramento Kings <b>3.39</b></td></tr><tr><td>samedi 24 octobre 2026 04:30</td><td>NCAAF</td><td class="teams">Stanford Cardinal – NC State Wolfpack</td><td>NC State Wolfpack <b>1.48</b> · Stanford Cardinal <b>3.29</b></td></tr><tr><td>samedi 24 octobre 2026 05:00</td><td>Liga MX</td><td class="teams">Atlante FC – Atlético San Luis</td><td>Atlante FC <b>2.39</b> · Atlético San Luis <b>3.35</b> · Nul <b>3.79</b></td></tr><tr><td>samedi 24 octobre 2026 06:00</td><td>A-League</td><td class="teams">Newcastle Jets FC – Macarthur FC</td><td>Nul <b>4.13</b> · Macarthur FC <b>3.41</b> · Newcastle Jets FC <b>2.25</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">Bucheon FC 1995 – Gwangju FC</td><td>Bucheon FC 1995 <b>2.31</b> · Nul <b>3.70</b> · Gwangju FC <b>3.61</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">Sangju Sangmu FC – Daejeon Citizen</td><td>Daejeon Citizen <b>2.19</b> · Nul <b>3.79</b> · Sangju Sangmu FC <b>3.86</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">FC Anyang – Jeonbuk Hyundai Motors</td><td>Nul <b>3.82</b> · FC Anyang <b>4.12</b> · Jeonbuk Hyundai Motors <b>2.10</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">FC Seoul – Gangwon FC</td><td>Nul <b>3.80</b> · FC Seoul <b>2.01</b> · Gangwon FC <b>4.54</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">Incheon United – Jeju United FC</td><td>Nul <b>3.44</b> · Incheon United <b>2.52</b> · Jeju United FC <b>3.42</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>K League 1</td><td class="teams">Ulsan Hyundai FC – Pohang Steelers</td><td>Nul <b>3.89</b> · Pohang Steelers <b>3.94</b> · Ulsan Hyundai FC <b>2.13</b></td></tr><tr><td>samedi 24 octobre 2026 07:00</td><td>J League</td><td class="teams">Hiroshima Sanfrecce FC – Shimizu S Pulse</td><td>Nul <b>5.12</b> · Hiroshima Sanfrecce FC <b>1.55</b> · Shimizu S Pulse <b>7.24</b></td></tr><tr><td>samedi 24 octobre 2026 08:00</td><td>J League</td><td class="teams">Tokyo Verdy – Avispa Fukuoka</td><td>Avispa Fukuoka <b>2.55</b> · Nul <b>3.24</b> · Tokyo Verdy <b>3.56</b></td></tr><tr><td>samedi 24 octobre 2026 08:00</td><td>J League</td><td class="teams">Vissel Kobe – FC Machida Zelvia</td><td>Nul <b>3.48</b> · FC Machida Zelvia <b>3.21</b> · Vissel Kobe <b>2.62</b></td></tr><tr><td>samedi 24 octobre 2026 08:00</td><td>J League</td><td class="teams">Kashima Antlers – Kashiwa Reysol</td><td>Nul <b>3.82</b> · Kashima Antlers <b>2.47</b> · Kashiwa Reysol <b>3.18</b></td></tr><tr><td>samedi 24 octobre 2026 08:00</td><td>A-League</td><td class="teams">Western Sydney Wanderers – Auckland FC</td><td>Auckland FC <b>2.83</b> · Nul <b>3.77</b> · Western Sydney Wanderers <b>2.76</b></td></tr><tr><td>samedi 24 octobre 2026 09:00</td><td>J League</td><td class="teams">Gamba Osaka – Kyoto Purple Sanga</td><td>Nul <b>4.03</b> · Gamba Osaka <b>2.13</b> · Kyoto Purple Sanga <b>3.82</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Henan FC – Beijing FC</td><td>Beijing FC <b>2.33</b> · Nul <b>4.05</b> · Henan FC <b>3.30</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Chengdu Rongcheng FC – Dalian Yingbo</td><td>Chengdu Rongcheng FC <b>2.21</b> · Dalian Yingbo <b>3.52</b> · Nul <b>4.09</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Chongqing Tonglianglong FC – Qingdao Hainiu FC</td><td>Chongqing Tonglianglong FC <b>1.35</b> · Nul <b>6.25</b> · Qingdao Hainiu FC <b>12.17</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Liaoning Tieren FC – Zhejiang</td><td>Nul <b>4.52</b> · Liaoning Tieren FC <b>2.16</b> · Zhejiang <b>3.37</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Qingdao West Coast FC – Yunnan Yukun</td><td>Nul <b>3.87</b> · Qingdao West Coast FC <b>2.67</b> · Yunnan Yukun <b>2.88</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Wuhan Three Towns – Shandong Luneng Taishan FC</td><td>Nul <b>4.39</b> · Shandong Luneng Taishan FC <b>2.11</b> · Wuhan Three Towns <b>3.59</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Tianjin Jinmen Tiger FC – Shanghai SIPG FC</td><td>Nul <b>3.76</b> · Shanghai SIPG FC <b>2.50</b> · Tianjin Jinmen Tiger FC <b>3.17</b></td></tr><tr><td>samedi 24 octobre 2026 09:30</td><td>Super League - China</td><td class="teams">Shenzhen Peng City FC – Shanghai Shenhua FC</td><td>Nul <b>4.23</b> · Shanghai Shenhua FC <b>2.11</b> · Shenzhen Peng City FC <b>3.71</b></td></tr><tr><td>samedi 24 octobre 2026 10:40</td><td>A-League</td><td class="teams">Melbourne Victory – Melbourne City</td><td>Nul <b>3.80</b> · Melbourne City <b>2.92</b> · Melbourne Victory <b>2.66</b></td></tr><tr><td>samedi 24 octobre 2026 11:45</td><td>Premier League - Russia</td><td class="teams">FC Akron Tolyatti – Dinamo Moscow</td><td>Dinamo Moscow <b>1.77</b> · Nul <b>4.34</b> · FC Akron Tolyatti <b>5.42</b></td></tr><tr><td>samedi 24 octobre 2026 12:00</td><td>Frauen-Bundesliga</td><td class="teams">VfL Wolfsburg – 1. FC Köln</td><td>1. FC Köln <b>8.22</b> · Nul <b>5.76</b> · VfL Wolfsburg <b>1.46</b></td></tr><tr><td>samedi 24 octobre 2026 12:15</td><td>Ekstraklasa - Poland</td><td class="teams">Piast Gliwice – Cracovia Kraków</td><td>Cracovia Kraków <b>2.80</b> · Nul <b>3.73</b> · Piast Gliwice <b>2.82</b></td></tr><tr><td>samedi 24 octobre 2026 13:00</td><td>Superettan - Sweden</td><td class="teams">IFK Värnamo – Sandvikens IF</td><td>Nul <b>4.07</b> · IFK Värnamo <b>2.12</b> · Sandvikens IF <b>3.80</b></td></tr><tr><td>samedi 24 octobre 2026 13:00</td><td>Superettan - Sweden</td><td class="teams">Östersunds FK – Nordic United FC</td><td>Nul <b>4.53</b> · Nordic United FC <b>6.29</b> · Östersunds FK <b>1.66</b></td></tr><tr><td>samedi 24 octobre 2026 13:00</td><td>Veikkausliiga - Finland</td><td class="teams">VPS Vaasa – FC Inter Turku</td><td>Nul <b>4.03</b> · FC Inter Turku <b>1.87</b> · VPS Vaasa <b>5.06</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>3. Liga - Germany</td><td class="teams">FC Ingolstadt 04 – MSV Duisburg</td><td>Nul <b>3.97</b> · FC Ingolstadt 04 <b>3.38</b> · MSV Duisburg <b>2.31</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>3. Liga - Germany</td><td class="teams">FC Viktoria Köln 1904 – SC Verl</td><td>Nul <b>4.83</b> · FC Viktoria Köln 1904 <b>1.78</b> · SC Verl <b>4.75</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>3. Liga - Germany</td><td class="teams">SV Meppen – FC Würzburger Kickers</td><td>Nul <b>3.96</b> · FC Würzburger Kickers <b>3.61</b> · SV Meppen <b>2.22</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>3. Liga - Germany</td><td class="teams">Hansa Rostock – Fortuna Düsseldorf</td><td>Nul <b>4.01</b> · Fortuna Düsseldorf <b>3.68</b> · Hansa Rostock <b>2.18</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>3. Liga - Germany</td><td class="teams">Wehen Wiesbaden – SG Sonnenhof Großaspach</td><td>Nul <b>4.10</b> · SG Sonnenhof Großaspach <b>3.85</b> · Wehen Wiesbaden <b>2.10</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>Premier League - Russia</td><td class="teams">FC Fakel Voronezh – Rodina Moscow</td><td>Nul <b>3.58</b> · FC Fakel Voronezh <b>2.27</b> · Rodina Moscow <b>3.83</b></td></tr><tr><td>samedi 24 octobre 2026 14:00</td><td>Frauen-Bundesliga</td><td class="teams">VfB Stuttgart – Eintracht Frankfurt</td><td>Nul <b>6.03</b> · Eintracht Frankfurt <b>1.43</b> · VfB Stuttgart <b>8.80</b></td></tr><tr><td>samedi 24 octobre 2026 14:45</td><td>Ekstraklasa - Poland</td><td class="teams">Korona Kielce – GKS Katowice</td><td>Nul <b>3.91</b> · GKS Katowice <b>3.42</b> · Korona Kielce <b>2.31</b></td></tr><tr><td>samedi 24 octobre 2026 15:00</td><td>Allsvenskan - Sweden</td><td class="teams">IK Sirius – AIK</td><td>AIK <b>5.35</b> · Nul <b>4.80</b> · IK Sirius <b>1.71</b></td></tr><tr><td>samedi 24 octobre 2026 15:00</td><td>Allsvenskan - Sweden</td><td class="teams">BK Hacken – Degerfors IF</td><td>BK Hacken <b>1.53</b> · Degerfors IF <b>7.40</b> · Nul <b>5.20</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>Saudi Pro League</td><td class="teams">Neom – Abha Club</td><td>Abha Club <b>5.86</b> · Nul <b>4.51</b> · Neom <b>1.70</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>Veikkausliiga - Finland</td><td class="teams">IF Gnistan – AC Oulu</td><td>AC Oulu <b>3.58</b> · Nul <b>3.75</b> · IF Gnistan <b>2.30</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>Eliteserien - Norway</td><td class="teams">Bodø/Glimt – Vålerenga</td><td>Bodø/Glimt <b>1.25</b> · Nul <b>9.39</b> · Vålerenga <b>13.95</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Aaron Pico – Losene Keita</td><td>Aaron Pico <b>1.85</b> · Losene Keita <b>2.28</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Nikita Krylov – Abdulrakhman Yakhyaev</td><td>Abdulrakhman Yakhyaev <b>1.27</b> · Nikita Krylov <b>5.22</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Abubakar Vagaev – Jacob Malkoun</td><td>Abubakar Vagaev <b>1.74</b> · Jacob Malkoun <b>2.47</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Abusupyian Magomedov – Cam Rowston</td><td>Abusupyian Magomedov <b>1.91</b> · Cam Rowston <b>2.18</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Alexander Volkov – Rizvan Kuniev</td><td>Alexander Volkov <b>1.95</b> · Rizvan Kuniev <b>2.14</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Azamat Murzakanov – Dominick Reyes</td><td>Azamat Murzakanov <b>1.56</b> · Dominick Reyes <b>2.96</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Bolaji Oki – Daniel Santos</td><td>Bolaji Oki <b>2.15</b> · Daniel Santos <b>1.94</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Grant Dawson – Nurullo Aliev</td><td>Grant Dawson <b>1.99</b> · Nurullo Aliev <b>2.09</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Iasmin Lucindo – Nicolle Caliari</td><td>Iasmin Lucindo <b>1.36</b> · Nicolle Caliari <b>4.11</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Kody Steele – Noah Gugnon</td><td>Kody Steele <b>1.75</b> · Noah Gugnon <b>2.44</b></td></tr><tr><td>samedi 24 octobre 2026 16:00</td><td>MMA</td><td class="teams">Lone&#x27;er Kavanagh – Ramazonbek Temirov</td><td>Lone&#x27;er Kavanagh <b>2.02</b> · Ramazonbek Temirov <b>2.06</b></td></tr><tr><td>samedi 24 octobre 2026 16:30</td><td>3. Liga - Germany</td><td class="teams">VfB Stuttgart II – Alemannia Aachen</td><td>Alemannia Aachen <b>2.22</b> · Nul <b>4.14</b> · VfB Stuttgart II <b>3.47</b></td></tr><tr><td>samedi 24 octobre 2026 17:00</td><td>Superettan - Sweden</td><td class="teams">IK Brage – Östers IF</td><td>Nul <b>4.03</b> · IK Brage <b>2.32</b> · Östers IF <b>3.32</b></td></tr><tr><td>samedi 24 octobre 2026 17:00</td><td>Austrian Football Bundesliga</td><td class="teams">WSG Tirol – Grazer AK</td><td>Nul <b>3.65</b> · Grazer AK <b>2.98</b> · WSG Tirol <b>2.69</b></td></tr><tr><td>samedi 24 octobre 2026 17:00</td><td>Austrian Football Bundesliga</td><td class="teams">Hartberg – Wolfsberger AC</td><td>Nul <b>3.88</b> · Hartberg <b>2.31</b> · Wolfsberger AC <b>3.45</b></td></tr><tr><td>samedi 24 octobre 2026 17:05</td><td>Saudi Pro League</td><td class="teams">Al-Kholood – Al-Ettifaq</td><td>Al-Ettifaq <b>2.70</b> · Al-Kholood <b>2.93</b> · Nul <b>3.72</b></td></tr><tr><td>samedi 24 octobre 2026 17:30</td><td>Allsvenskan - Sweden</td><td class="teams">Djurgardens IF – Örgryte IS</td><td>Djurgardens IF <b>1.26</b> · Nul <b>8.52</b> · Örgryte IS <b>14.82</b></td></tr><tr><td>samedi 24 octobre 2026 17:30</td><td>Allsvenskan - Sweden</td><td class="teams">Kalmar FF – IF Brommapojkarna</td><td>Nul <b>4.04</b> · IF Brommapojkarna <b>4.31</b> · Kalmar FF <b>2.00</b></td></tr><tr><td>samedi 24 octobre 2026 17:30</td><td>Ekstraklasa - Poland</td><td class="teams">Pogoń Szczecin – Radomiak Radom</td><td>Nul <b>4.21</b> · Pogoń Szczecin <b>1.90</b> · Radomiak Radom <b>4.61</b></td></tr><tr><td>samedi 24 octobre 2026 17:30</td><td>Primera División - Chile</td><td class="teams">La Serena – Deportes Concepción</td><td>Deportes Concepción <b>3.25</b> · Nul <b>3.64</b> · La Serena <b>2.51</b></td></tr><tr><td>samedi 24 octobre 2026 17:40</td><td>MMA</td><td class="teams">Asaf Chopurov – Colby Thicknesse</td><td>Asaf Chopurov <b>1.25</b> · Colby Thicknesse <b>5.56</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>Eliteserien - Norway</td><td class="teams">HamKam – Rosenborg</td><td>Nul <b>4.56</b> · HamKam <b>5.34</b> · Rosenborg <b>1.74</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>Swiss Superleague</td><td class="teams">FC Zurich – FC Luzern</td><td>Nul <b>4.19</b> · FC Luzern <b>2.63</b> · FC Zurich <b>2.76</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>Swiss Superleague</td><td class="teams">Servette – FC Vaduz</td><td>Nul <b>4.36</b> · FC Vaduz <b>4.10</b> · Servette <b>1.97</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Auburn Tigers – LSU Tigers</td><td>Auburn Tigers <b>3.55</b> · LSU Tigers <b>1.43</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">SMU Mustangs – California Golden Bears</td><td>California Golden Bears <b>8.65</b> · SMU Mustangs <b>1.16</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Cincinnati Bearcats – Texas Tech Red Raiders</td><td>Cincinnati Bearcats <b>4.58</b> · Texas Tech Red Raiders <b>1.31</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Florida Atlantic Owls – Rice Owls</td><td>Florida Atlantic Owls <b>1.41</b> · Rice Owls <b>3.67</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Michigan Wolverines – Indiana Hoosiers</td><td>Indiana Hoosiers <b>1.43</b> · Michigan Wolverines <b>3.54</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Miami Hurricanes – Pittsburgh Panthers</td><td>Miami Hurricanes <b>1.13</b> · Pittsburgh Panthers <b>10.68</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Northwestern Wildcats – Rutgers Scarlet Knights</td><td>Northwestern Wildcats <b>1.20</b> · Rutgers Scarlet Knights <b>6.74</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">TCU Horned Frogs – West Virginia Mountaineers</td><td>TCU Horned Frogs <b>1.36</b> · West Virginia Mountaineers <b>4.05</b></td></tr><tr><td>samedi 24 octobre 2026 18:00</td><td>NCAAF</td><td class="teams">Toledo Rockets – Western Michigan Broncos</td><td>Toledo Rockets <b>1.71</b> · Western Michigan Broncos <b>2.54</b></td></tr><tr><td>samedi 24 octobre 2026 18:30</td><td>Premier League - Russia</td><td class="teams">FC Krasnodar – FC Baltika Kaliningrad</td><td>Nul <b>3.84</b> · FC Baltika Kaliningrad <b>4.97</b> · FC Krasnodar <b>1.93</b></td></tr></tbody></table></div>
-
-  <h2>Autres compétitions (foot du monde entier et autres sports)</h2>
-  <div class="grid">
+  <h2>⭐ Paris conseillés</h2>
+  <p class="sub">Les matchs où au moins un bookmaker paie plus que la valeur juste. C'est la seule méthode qui a gagné sur nos tests.</p>
+  <div class="grid" style="margin-top:10px">
       <article class="pick">
-        <div class="pick-top"><span class="league">NBA</span>
-          <span class="when">samedi 24 octobre 2026 03:40</span></div>
-        <h3>San Antonio Spurs <span class="vs">vs</span> Houston Rockets</h3>
-        <p class="bet">Victoire Houston Rockets <strong>@ 3.40</strong> <span class="book">chez 1xBet</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>33 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.05 / 2.88</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+11.5 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>1.2 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 3.11</b></p>
-        <span class="conf">19 bookmakers comparés</span>
+        <div class="pick-top"><span>NBA</span><span>samedi 24 octobre 2026 · 01:40</span></div>
+        <h3>San Antonio Spurs <span class="vs">contre</span> Houston Rockets</h3>
+        <p class="bet">⭐ Victoire Houston Rockets</p>
+        <p class="line">Chances estimées : <b>33 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 3.12</b></p>
+        <p class="line small">Mise conseillée : 1.2 % de ton budget paris · déjà vu à 3.40 chez 1xBet</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">NBA</span>
-          <span class="when">samedi 24 octobre 2026 04:10</span></div>
-        <h3>Sacramento Kings <span class="vs">vs</span> Portland Trail Blazers</h3>
-        <p class="bet">Victoire Sacramento Kings <strong>@ 3.50</strong> <span class="book">chez Pinnacle</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>30 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.32 / 3.14</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+5.5 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.5 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 3.39</b></p>
-        <span class="conf">18 bookmakers comparés</span>
+        <div class="pick-top"><span>NBA</span><span>samedi 24 octobre 2026 · 02:10</span></div>
+        <h3>Sacramento Kings <span class="vs">contre</span> Portland Trail Blazers</h3>
+        <p class="bet">⭐ Victoire Sacramento Kings</p>
+        <p class="line">Chances estimées : <b>30 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 3.39</b></p>
+        <p class="line small">Mise conseillée : 0.5 % de ton budget paris · déjà vu à 3.50 chez Pinnacle</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">Veikkausliiga - Finland</span>
-          <span class="when">samedi 24 octobre 2026 16:00</span></div>
-        <h3>IF Gnistan <span class="vs">vs</span> AC Oulu</h3>
-        <p class="bet">Match nul <strong>@ 3.85</strong> <span class="book">chez Coolbet</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>27 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.67 / 3.38</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+4.8 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.4 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 3.75</b></p>
-        <span class="conf">16 bookmakers comparés</span>
+        <div class="pick-top"><span>Veikkausliiga - Finland</span><span>samedi 24 octobre 2026 · 14:00</span></div>
+        <h3>IF Gnistan <span class="vs">contre</span> AC Oulu</h3>
+        <p class="bet">⭐ Match nul</p>
+        <p class="line">Chances estimées : <b>27 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 3.75</b></p>
+        <p class="line small">Mise conseillée : 0.4 % de ton budget paris · déjà vu à 3.85 chez Coolbet</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">UEFA Europa Conference League</span>
-          <span class="when">jeudi 22 octobre 2026 18:45</span></div>
-        <h3>FK Kauno Žalgiris <span class="vs">vs</span> SK Brann</h3>
-        <p class="bet">Match nul <strong>@ 4.08</strong> <span class="book">chez BetOnline.ag</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>25 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.93 / 3.66</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+3.9 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.3 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 4.01</b></p>
-        <span class="conf">15 bookmakers comparés</span>
+        <div class="pick-top"><span>UEFA Europa Conference League</span><span>jeudi 22 octobre 2026 · 19:00</span></div>
+        <h3>Ajax <span class="vs">contre</span> Atalanta BC</h3>
+        <p class="bet">⭐ Victoire Atalanta BC</p>
+        <p class="line">Chances estimées : <b>29 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 3.52</b></p>
+        <p class="line small">Mise conseillée : 0.3 % de ton budget paris · déjà vu à 3.55 chez Unibet (NL)</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">UEFA Europa Conference League</span>
-          <span class="when">jeudi 22 octobre 2026 21:00</span></div>
-        <h3>Ajax <span class="vs">vs</span> Atalanta BC</h3>
-        <p class="bet">Victoire Atalanta BC <strong>@ 3.55</strong> <span class="book">chez Unibet (NL)</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>29 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.45 / 3.24</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+2.8 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.3 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 3.52</b></p>
-        <span class="conf">15 bookmakers comparés</span>
+        <div class="pick-top"><span>Ekstraklasa - Poland</span><span>vendredi 23 octobre 2026 · 16:00</span></div>
+        <h3>Motor Lublin <span class="vs">contre</span> Zagłębie Lubin</h3>
+        <p class="bet">⭐ Victoire Zagłębie Lubin</p>
+        <p class="line">Chances estimées : <b>26 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 3.87</b></p>
+        <p class="line small">Mise conseillée : 0.2 % de ton budget paris · déjà vu à 3.89 chez Pinnacle</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">Ekstraklasa - Poland</span>
-          <span class="when">vendredi 23 octobre 2026 18:00</span></div>
-        <h3>Motor Lublin <span class="vs">vs</span> Zagłębie Lubin</h3>
-        <p class="bet">Victoire Zagłębie Lubin <strong>@ 3.89</strong> <span class="book">chez Pinnacle</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>26 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>3.80 / 3.48</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+2.5 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.2 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 3.87</b></p>
-        <span class="conf">19 bookmakers comparés</span>
+        <div class="pick-top"><span>NBA</span><span>vendredi 23 octobre 2026 · 23:10</span></div>
+        <h3>Charlotte Hornets <span class="vs">contre</span> Atlanta Hawks</h3>
+        <p class="bet">⭐ Victoire Charlotte Hornets</p>
+        <p class="line">Chances estimées : <b>44 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 2.30</b></p>
+        <p class="line small">Mise conseillée : 0.4 % de ton budget paris · déjà vu à 2.30 chez Unibet (SE)</p>
       </article>
       <article class="pick">
-        <div class="pick-top"><span class="league">MMA</span>
-          <span class="when">samedi 24 octobre 2026 16:00</span></div>
-        <h3>Aaron Pico <span class="vs">vs</span> Losene Keita</h3>
-        <p class="bet">Victoire Aaron Pico <strong>@ 1.85</strong> <span class="book">chez Nordic Bet</span></p>
-        <dl>
-          <div><dt>Proba (consensus)</dt><dd>55 %</dd></div>
-          <div><dt>Cote juste / moyenne</dt><dd>1.81 / 1.72</dd></div>
-          <div><dt>Avantage</dt><dd class="pos">+2.1 %</dd></div>
-          <div><dt>Mise conseillée</dt><dd>0.6 % bankroll</dd></div>
-        </dl>
-        <p class="mine">Sur Bet360 : à jouer seulement si la cote est <b>≥ 1.85</b></p>
-        <span class="conf">10 bookmakers comparés</span>
+        <div class="pick-top"><span>MMA</span><span>samedi 24 octobre 2026 · 14:00</span></div>
+        <h3>Aaron Pico <span class="vs">contre</span> Losene Keita</h3>
+        <p class="bet">⭐ Victoire Aaron Pico</p>
+        <p class="line">Chances estimées : <b>55 %</b></p>
+        <p class="mine">Sur Bet360 : jouer seulement si la cote est <b>≥ 1.85</b></p>
+        <p class="line small">Mise conseillée : 0.6 % de ton budget paris · déjà vu à 1.85 chez Nordic Bet</p>
       </article></div>
 
-  <h2>Journal des paris proposés</h2>
-  <div class="stats"><div><b class="pos">+0.00 u</b><span>Tous les paris : 0 réglés, 12 en attente · réussite 0 % · ROI +0.0 %</span></div><div><b>–</b><span>Football : aucun pari encore</span></div><div><b class="pos">+0.00 u</b><span>Autres sports : 0 réglés, 12 en attente · réussite 0 % · ROI +0.0 %</span></div></div>
+  <h2>Tous les pronostics</h2>
+  <input class="search" id="q" type="search" placeholder="Chercher une équipe ou une compétition…">
+  <h3 class="day">Aujourd&#x27;hui</h3><div class="comp" data-comp><h4>Basketball Euroleague</h4><div class="list"><div class="row" data-q="anadolu efes beşiktaş j.k. basketball euroleague">
+              <div class="t">17:30</div>
+              <div class="m"><div class="teams">Anadolu Efes – Beşiktaş J.K.</div>
+                <div class="pr"><b>Victoire Anadolu Efes</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.60</b></div></div><div class="row" data-q="fc bayern münchen dubai basketball basketball euroleague">
+              <div class="t">18:00</div>
+              <div class="m"><div class="teams">FC Bayern München – Dubai Basketball</div>
+                <div class="pr"><b>Victoire Dubai Basketball</b> <span class="small">· chances 54 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.89</b></div></div><div class="row" data-q="maccabi tel aviv real madrid basketball euroleague">
+              <div class="t">18:05</div>
+              <div class="m"><div class="teams">Maccabi Tel Aviv – Real Madrid</div>
+                <div class="pr"><b>Victoire Real Madrid</b> <span class="small">· chances 62 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.63</b></div></div><div class="row" data-q="panathinaikos saski baskonia basketball euroleague">
+              <div class="t">18:15</div>
+              <div class="m"><div class="teams">Panathinaikos – Saski Baskonia</div>
+                <div class="pr"><b>Victoire Panathinaikos</b> <span class="small">· chances 89 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.15</b></div></div><div class="row" data-q="pallacanestro olimpia milano fc barcelona bàsquet basketball euroleague">
+              <div class="t">18:30</div>
+              <div class="m"><div class="teams">Pallacanestro Olimpia Milano – FC Barcelona Bàsquet</div>
+                <div class="pr"><b>Victoire Pallacanestro Olimpia Milano</b> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.84</b></div></div><div class="row" data-q="kk partizan nis kk crvena zvezda basketball euroleague">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">KK Partizan NIS – KK Crvena zvezda</div>
+                <div class="pr"><b>Victoire KK Crvena zvezda</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>2.02</b></div></div></div></div><div class="comp" data-comp><h4>UEFA Europa League</h4><div class="list"><div class="row" data-q="bournemouth ac milan uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Bournemouth – AC Milan</div>
+                <div class="pr"><b>Victoire Bournemouth</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Bournemouth ou nul · chances 76 % · cote mini 1.35</div></div>
+              <div class="mini"><span>cote mini</span><b>2.00</b></div></div><div class="row" data-q="jagiellonia białystok anderlecht uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Jagiellonia Białystok – Anderlecht</div>
+                <div class="pr"><b>Victoire Anderlecht</b> <span class="small">· chances 42 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Anderlecht ou nul · chances 69 % · cote mini 1.48</div></div>
+              <div class="mini"><span>cote mini</span><b>2.41</b></div></div><div class="row" data-q="omonoia fc benfica uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Omonoia FC – Benfica</div>
+                <div class="pr"><b>Victoire Benfica</b> <span class="small">· chances 72 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.41</b></div></div><div class="row" data-q="besiktas jk crystal palace uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Besiktas JK – Crystal Palace</div>
+                <div class="pr"><b>Victoire Besiktas JK</b> <span class="small">· chances 43 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Besiktas JK ou nul · chances 69 % · cote mini 1.48</div></div>
+              <div class="mini"><span>cote mini</span><b>2.35</b></div></div><div class="row" data-q="celtic celta vigo uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Celtic – Celta Vigo</div>
+                <div class="pr"><b>Victoire Celtic</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Celtic ou nul · chances 66 % · cote mini 1.55</div></div>
+              <div class="mini"><span>cote mini</span><b>2.60</b></div></div><div class="row" data-q="lillestrom real sociedad uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Lillestrom – Real Sociedad</div>
+                <div class="pr"><b>Victoire Real Sociedad</b> <span class="small">· chances 67 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.53</b></div></div><div class="row" data-q="tsg hoffenheim lyon uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">TSG Hoffenheim – Lyon</div>
+                <div class="pr"><b>Victoire TSG Hoffenheim</b> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : TSG Hoffenheim ou nul · chances 71 % · cote mini 1.44</div></div>
+              <div class="mini"><span>cote mini</span><b>2.15</b></div></div><div class="row" data-q="nk celje salzburg uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">NK Celje – Salzburg</div>
+                <div class="pr"><b>Victoire Salzburg</b> <span class="small">· chances 63 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.62</b></div></div><div class="row" data-q="olympiakos piraeus sparta prague uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Olympiakos Piraeus – Sparta Prague</div>
+                <div class="pr"><b>Victoire Olympiakos Piraeus</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.60</b></div></div><div class="row" data-q="viktoria plzeň pfc levski sofia uefa europa league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Viktoria Plzeň – PFC Levski Sofia</div>
+                <div class="pr"><b>Victoire Viktoria Plzeň</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.84</b></div></div></div></div><div class="comp" data-comp><h4>UEFA Europa Conference League</h4><div class="list"><div class="row" data-q="agf aarhus kf egnatia uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">AGF Aarhus – KF Egnatia</div>
+                <div class="pr"><b>Victoire AGF Aarhus</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.59</b></div></div><div class="row" data-q="as monaco sc freiburg uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">AS Monaco – SC Freiburg</div>
+                <div class="pr"><b>Victoire AS Monaco</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : AS Monaco ou nul · chances 70 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.32</b></div></div><div class="row" data-q="ajax atalanta bc uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Ajax – Atalanta BC</div>
+                <div class="pr"><b>Victoire Ajax</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Ajax ou nul · chances 71 % · cote mini 1.44</div></div>
+              <div class="mini"><span>cote mini</span><b>2.17</b></div></div><div class="row" data-q="fc midtjylland sint truiden uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">FC Midtjylland – Sint Truiden</div>
+                <div class="pr"><b>Victoire FC Midtjylland</b> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : FC Midtjylland ou nul · chances 78 % · cote mini 1.30</div></div>
+              <div class="mini"><span>cote mini</span><b>1.87</b></div></div><div class="row" data-q="fc thun hajduk split uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">FC Thun – Hajduk Split</div>
+                <div class="pr"><b>Victoire Hajduk Split</b> <span class="small">· chances 41 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Hajduk Split ou nul · chances 66 % · cote mini 1.54</div></div>
+              <div class="mini"><span>cote mini</span><b>2.51</b></div></div><div class="row" data-q="lincoln red imps fc fc twente enschede uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Lincoln Red Imps FC – FC Twente Enschede</div>
+                <div class="pr"><b>Victoire FC Twente Enschede</b> <span class="small">· chances 81 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.26</b></div></div><div class="row" data-q="fk borac banja luka kups kuopio uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">FK Borac Banja Luka – KuPS Kuopio</div>
+                <div class="pr"><b>Victoire FK Borac Banja Luka</b> <span class="small">· chances 54 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : FK Borac Banja Luka ou nul · chances 80 % · cote mini 1.28</div></div>
+              <div class="mini"><span>cote mini</span><b>1.88</b></div></div><div class="row" data-q="sc braga gent uefa europa conference league">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">SC Braga – Gent</div>
+                <div class="pr"><b>Victoire SC Braga</b> <span class="small">· chances 49 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : SC Braga ou nul · chances 77 % · cote mini 1.33</div></div>
+              <div class="mini"><span>cote mini</span><b>2.07</b></div></div></div></div><div class="comp" data-comp><h4>NCAAF</h4><div class="list"><div class="row" data-q="appalachian state mountaineers james madison dukes ncaaf">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">Appalachian State Mountaineers – James Madison Dukes</div>
+                <div class="pr"><b>Victoire James Madison Dukes</b> <span class="small">· chances 79 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.29</b></div></div><div class="row" data-q="kennesaw state owls liberty flames ncaaf">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">Kennesaw State Owls – Liberty Flames</div>
+                <div class="pr"><b>Victoire Liberty Flames</b> <span class="small">· chances 76 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.35</b></div></div><div class="row" data-q="memphis tigers east carolina pirates ncaaf">
+              <div class="t">23:30</div>
+              <div class="m"><div class="teams">Memphis Tigers – East Carolina Pirates</div>
+                <div class="pr"><b>Victoire Memphis Tigers</b> <span class="small">· chances 77 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.33</b></div></div></div></div><div class="comp" data-comp><h4>NBA</h4><div class="list"><div class="row" data-q="philadelphia 76ers cleveland cavaliers nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Philadelphia 76ers – Cleveland Cavaliers</div>
+                <div class="pr"><b>Victoire Philadelphia 76ers</b> <span class="small">· chances 57 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.80</b></div></div></div></div><div class="comp" data-comp><h4>NHL</h4><div class="list"><div class="row" data-q="new jersey devils anaheim ducks nhl">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">New Jersey Devils – Anaheim Ducks</div>
+                <div class="pr"><b>Victoire New Jersey Devils</b> <span class="small">· chances 65 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.57</b></div></div><div class="row" data-q="boston bruins nashville predators nhl">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Boston Bruins – Nashville Predators</div>
+                <div class="pr"><b>Victoire Boston Bruins</b> <span class="small">· chances 57 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.80</b></div></div><div class="row" data-q="pittsburgh penguins florida panthers nhl">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Pittsburgh Penguins – Florida Panthers</div>
+                <div class="pr"><b>Victoire Pittsburgh Penguins</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.98</b></div></div><div class="row" data-q="toronto maple leafs new york rangers nhl">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Toronto Maple Leafs – New York Rangers</div>
+                <div class="pr"><b>Victoire New York Rangers</b> <span class="small">· chances 50 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>2.02</b></div></div><div class="row" data-q="ottawa senators san jose sharks nhl">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Ottawa Senators – San Jose Sharks</div>
+                <div class="pr"><b>Victoire Ottawa Senators</b> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.85</b></div></div><div class="row" data-q="new york islanders los angeles kings nhl">
+              <div class="t">23:40</div>
+              <div class="m"><div class="teams">New York Islanders – Los Angeles Kings</div>
+                <div class="pr"><b>Victoire Los Angeles Kings</b> <span class="small">· chances 50 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>2.03</b></div></div></div></div><h3 class="day">Demain</h3><div class="comp" data-comp><h4>NHL</h4><div class="list"><div class="row" data-q="dallas stars winnipeg jets nhl">
+              <div class="t">00:10</div>
+              <div class="m"><div class="teams">Dallas Stars – Winnipeg Jets</div>
+                <div class="pr"><b>Victoire Dallas Stars</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.60</b></div></div><div class="row" data-q="st louis blues vegas golden knights nhl">
+              <div class="t">00:10</div>
+              <div class="m"><div class="teams">St Louis Blues – Vegas Golden Knights</div>
+                <div class="pr"><b>Victoire Vegas Golden Knights</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.91</b></div></div><div class="row" data-q="calgary flames minnesota wild nhl">
+              <div class="t">01:10</div>
+              <div class="m"><div class="teams">Calgary Flames – Minnesota Wild</div>
+                <div class="pr"><b>Victoire Minnesota Wild</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.60</b></div></div><div class="row" data-q="edmonton oilers carolina hurricanes nhl">
+              <div class="t">01:10</div>
+              <div class="m"><div class="teams">Edmonton Oilers – Carolina Hurricanes</div>
+                <div class="pr"><b>Victoire Carolina Hurricanes</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.95</b></div></div><div class="row" data-q="vancouver canucks detroit red wings nhl">
+              <div class="t">02:10</div>
+              <div class="m"><div class="teams">Vancouver Canucks – Detroit Red Wings</div>
+                <div class="pr"><b>Victoire Detroit Red Wings</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div><div class="row" data-q="seattle kraken utah mammoth nhl">
+              <div class="t">02:10</div>
+              <div class="m"><div class="teams">Seattle Kraken – Utah Mammoth</div>
+                <div class="pr"><b>Victoire Utah Mammoth</b> <span class="small">· chances 61 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.68</b></div></div></div></div><div class="comp" data-comp><h4>NFL</h4><div class="list"><div class="row" data-q="chicago bears new england patriots nfl">
+              <div class="t">00:15</div>
+              <div class="m"><div class="teams">Chicago Bears – New England Patriots</div>
+                <div class="pr"><b>Victoire Chicago Bears</b> <span class="small">· chances 59 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.73</b></div></div></div></div><div class="comp" data-comp><h4>Copa Libertadores</h4><div class="list"><div class="row" data-q="flamengo-rj estudiantes la plata copa libertadores">
+              <div class="t">00:30</div>
+              <div class="m"><div class="teams">Flamengo-RJ – Estudiantes La Plata</div>
+                <div class="pr"><b>Victoire Flamengo-RJ</b> <span class="small">· chances 75 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.36</b></div></div></div></div><div class="comp" data-comp><h4>NBA</h4><div class="list"><div class="row" data-q="oklahoma city thunder denver nuggets nba">
+              <div class="t">01:40</div>
+              <div class="m"><div class="teams">Oklahoma City Thunder – Denver Nuggets</div>
+                <div class="pr"><b>Victoire Oklahoma City Thunder</b> <span class="small">· chances 73 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.39</b></div></div><div class="row" data-q="milwaukee bucks chicago bulls nba">
+              <div class="t">20:10</div>
+              <div class="m"><div class="teams">Milwaukee Bucks – Chicago Bulls</div>
+                <div class="pr"><b>Victoire Milwaukee Bucks</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.99</b></div></div><div class="row" data-q="charlotte hornets atlanta hawks nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Charlotte Hornets – Atlanta Hawks</div>
+                <div class="pr"><b>Victoire Atlanta Hawks</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.83</b></div></div><div class="row" data-q="boston celtics new york knicks nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Boston Celtics – New York Knicks</div>
+                <div class="pr"><b>Victoire Boston Celtics</b> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.86</b></div></div><div class="row" data-q="indiana pacers dallas mavericks nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Indiana Pacers – Dallas Mavericks</div>
+                <div class="pr"><b>Victoire Indiana Pacers</b> <span class="small">· chances 65 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.56</b></div></div><div class="row" data-q="orlando magic minnesota timberwolves nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Orlando Magic – Minnesota Timberwolves</div>
+                <div class="pr"><b>Victoire Minnesota Timberwolves</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.93</b></div></div><div class="row" data-q="washington wizards toronto raptors nba">
+              <div class="t">23:10</div>
+              <div class="m"><div class="teams">Washington Wizards – Toronto Raptors</div>
+                <div class="pr"><b>Victoire Toronto Raptors</b> <span class="small">· chances 63 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.62</b></div></div></div></div><div class="comp" data-comp><h4>WTA Ningbo Open</h4><div class="list"><div class="row" data-q="sara bejlek marie bouzkova wta ningbo open">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Sara Bejlek – Marie Bouzkova</div>
+                <div class="pr"><b>Victoire Marie Bouzkova</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div><div class="row" data-q="leylah fernandez ekaterina alexandrova wta ningbo open">
+              <div class="t">06:30</div>
+              <div class="m"><div class="teams">Leylah Fernandez – Ekaterina Alexandrova</div>
+                <div class="pr"><b>Victoire Ekaterina Alexandrova</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.83</b></div></div><div class="row" data-q="iva jović diana shnaider wta ningbo open">
+              <div class="t">08:00</div>
+              <div class="m"><div class="teams">Iva Jović – Diana Shnaider</div>
+                <div class="pr"><b>Victoire Diana Shnaider</b> <span class="small">· chances 50 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>2.04</b></div></div><div class="row" data-q="elena rybakina katarzyna kawa wta ningbo open">
+              <div class="t">11:00</div>
+              <div class="m"><div class="teams">Elena Rybakina – Katarzyna Kawa</div>
+                <div class="pr"><b>Victoire Elena Rybakina</b> <span class="small">· chances 92 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.11</b></div></div></div></div><div class="comp" data-comp><h4>A-League</h4><div class="list"><div class="row" data-q="brisbane roar perth glory a-league">
+              <div class="t">09:00</div>
+              <div class="m"><div class="teams">Brisbane Roar – Perth Glory</div>
+                <div class="pr"><b>Victoire Brisbane Roar</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Brisbane Roar ou nul · chances 71 % · cote mini 1.43</div></div>
+              <div class="mini"><span>cote mini</span><b>2.29</b></div></div></div></div><div class="comp" data-comp><h4>Saudi Pro League</h4><div class="list"><div class="row" data-q="al-faisaly ksa fc al-nassr saudi pro league">
+              <div class="t">13:30</div>
+              <div class="m"><div class="teams">Al-Faisaly KSA FC – Al-Nassr</div>
+                <div class="pr"><b>Victoire Al-Nassr</b> <span class="small">· chances 75 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.36</b></div></div><div class="row" data-q="al-ittihad diriyah club saudi pro league">
+              <div class="t">15:30</div>
+              <div class="m"><div class="teams">Al-Ittihad – Diriyah Club</div>
+                <div class="pr"><b>Victoire Al-Ittihad</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Al-Ittihad ou nul · chances 72 % · cote mini 1.42</div></div>
+              <div class="mini"><span>cote mini</span><b>2.13</b></div></div><div class="row" data-q="al-qadsiah al-hilal saudi pro league">
+              <div class="t">18:00</div>
+              <div class="m"><div class="teams">Al-Qadsiah – Al-Hilal</div>
+                <div class="pr"><b>Victoire Al-Hilal</b> <span class="small">· chances 46 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Al-Hilal ou nul · chances 71 % · cote mini 1.44</div></div>
+              <div class="mini"><span>cote mini</span><b>2.20</b></div></div></div></div><div class="comp" data-comp><h4>Ekstraklasa - Poland</h4><div class="list"><div class="row" data-q="motor lublin zagłębie lubin ekstraklasa - poland">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Motor Lublin – Zagłębie Lubin</div>
+                <div class="pr"><b>Victoire Motor Lublin</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Motor Lublin ou nul · chances 74 % · cote mini 1.38</div></div>
+              <div class="mini"><span>cote mini</span><b>2.17</b></div></div><div class="row" data-q="widzew łódź górnik zabrze ekstraklasa - poland">
+              <div class="t">18:30</div>
+              <div class="m"><div class="teams">Widzew Łódź – Górnik Zabrze</div>
+                <div class="pr"><b>Victoire Górnik Zabrze</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Górnik Zabrze ou nul · chances 67 % · cote mini 1.52</div></div>
+              <div class="mini"><span>cote mini</span><b>2.62</b></div></div></div></div><div class="comp" data-comp><h4>Premier League - Russia</h4><div class="list"><div class="row" data-q="fc akhmat grozny gazovik orenburg premier league - russia">
+              <div class="t">16:30</div>
+              <div class="m"><div class="teams">FC Akhmat Grozny – Gazovik Orenburg</div>
+                <div class="pr"><b>Victoire FC Akhmat Grozny</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : FC Akhmat Grozny ou nul · chances 74 % · cote mini 1.37</div></div>
+              <div class="mini"><span>cote mini</span><b>2.14</b></div></div></div></div><div class="comp" data-comp><h4>Frauen-Bundesliga</h4><div class="list"><div class="row" data-q="rb leipzig bayern munich frauen-bundesliga">
+              <div class="t">16:30</div>
+              <div class="m"><div class="teams">RB Leipzig – Bayern Munich</div>
+                <div class="pr"><b>Victoire Bayern Munich</b> <span class="small">· chances 80 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.28</b></div></div></div></div><div class="comp" data-comp><h4>Basketball Euroleague</h4><div class="list"><div class="row" data-q="žalgiris asvel lyon villeurbanne basketball euroleague">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">Žalgiris – ASVEL Lyon Villeurbanne</div>
+                <div class="pr"><b>Victoire Žalgiris</b> <span class="small">· chances 79 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.30</b></div></div><div class="row" data-q="olympiacos fenerbahce sk basketball euroleague">
+              <div class="t">18:15</div>
+              <div class="m"><div class="teams">Olympiacos – Fenerbahce SK</div>
+                <div class="pr"><b>Victoire Olympiacos</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.81</b></div></div><div class="row" data-q="paris basketball valencia basket basketball euroleague">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">Paris Basketball – Valencia Basket</div>
+                <div class="pr"><b>Victoire Valencia Basket</b> <span class="small">· chances 64 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.60</b></div></div></div></div><div class="comp" data-comp><h4>3. Liga - Germany</h4><div class="list"><div class="row" data-q="rot-weiss essen jahn regensburg 3. liga - germany">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">Rot-Weiss Essen – Jahn Regensburg</div>
+                <div class="pr"><b>Victoire Rot-Weiss Essen</b> <span class="small">· chances 57 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.78</b></div></div></div></div><div class="comp" data-comp><h4>Allsvenskan - Sweden</h4><div class="list"><div class="row" data-q="västerås sk halmstads bk allsvenskan - sweden">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">Västerås SK – Halmstads BK</div>
+                <div class="pr"><b>Victoire Västerås SK</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.82</b></div></div><div class="row" data-q="if elfsborg malmo ff allsvenskan - sweden">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">IF Elfsborg – Malmo FF</div>
+                <div class="pr"><b>Victoire IF Elfsborg</b> <span class="small">· chances 45 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : IF Elfsborg ou nul · chances 72 % · cote mini 1.42</div></div>
+              <div class="mini"><span>cote mini</span><b>2.24</b></div></div></div></div><div class="comp" data-comp><h4>Superettan - Sweden</h4><div class="list"><div class="row" data-q="ik oddevold gif sundsvall superettan - sweden">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">IK Oddevold – GIF Sundsvall</div>
+                <div class="pr"><b>Victoire IK Oddevold</b> <span class="small">· chances 68 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.50</b></div></div></div></div><div class="comp" data-comp><h4>Denmark Superliga</h4><div class="list"><div class="row" data-q="randers fc brondby if denmark superliga">
+              <div class="t">17:00</div>
+              <div class="m"><div class="teams">Randers FC – Brondby IF</div>
+                <div class="pr"><b>Victoire Brondby IF</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Brondby IF ou nul · chances 73 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.12</b></div></div></div></div><div class="comp" data-comp><h4>Austrian Football Bundesliga</h4><div class="list"><div class="row" data-q="rheindorf altach austria wien austrian football bundesliga">
+              <div class="t">17:30</div>
+              <div class="m"><div class="teams">Rheindorf Altach – Austria Wien</div>
+                <div class="pr"><b>Victoire Rheindorf Altach</b> <span class="small">· chances 43 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Rheindorf Altach ou nul · chances 70 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.36</b></div></div></div></div><div class="comp" data-comp><h4>League of Ireland</h4><div class="list"><div class="row" data-q="bohemians shelbourne dublin league of ireland">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">Bohemians – Shelbourne Dublin</div>
+                <div class="pr"><b>Victoire Bohemians</b> <span class="small">· chances 58 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.75</b></div></div><div class="row" data-q="derry city dundalk league of ireland">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">Derry City – Dundalk</div>
+                <div class="pr"><b>Victoire Derry City</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Derry City ou nul · chances 76 % · cote mini 1.33</div></div>
+              <div class="mini"><span>cote mini</span><b>1.96</b></div></div><div class="row" data-q="waterford fc drogheda united league of ireland">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">Waterford FC – Drogheda United</div>
+                <div class="pr"><b>Victoire Waterford FC</b> <span class="small">· chances 49 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Waterford FC ou nul · chances 75 % · cote mini 1.36</div></div>
+              <div class="mini"><span>cote mini</span><b>2.06</b></div></div><div class="row" data-q="galway united st patricks athletic league of ireland">
+              <div class="t">18:45</div>
+              <div class="m"><div class="teams">Galway United – St Patricks Athletic</div>
+                <div class="pr"><b>Victoire St Patricks Athletic</b> <span class="small">· chances 57 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.78</b></div></div><div class="row" data-q="shamrock rovers sligo rovers league of ireland">
+              <div class="t">19:00</div>
+              <div class="m"><div class="teams">Shamrock Rovers – Sligo Rovers</div>
+                <div class="pr"><b>Victoire Shamrock Rovers</b> <span class="small">· chances 81 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.25</b></div></div></div></div><div class="comp" data-comp><h4>Primera División - Argentina</h4><div class="list"><div class="row" data-q="gimnasia la plata sarmiento de junin primera división - argentina">
+              <div class="t">21:00</div>
+              <div class="m"><div class="teams">Gimnasia La Plata – Sarmiento de Junin</div>
+                <div class="pr"><b>Victoire Gimnasia La Plata</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.81</b></div></div><div class="row" data-q="gimnasia mendoza platense primera división - argentina">
+              <div class="t">21:30</div>
+              <div class="m"><div class="teams">Gimnasia Mendoza – Platense</div>
+                <div class="pr"><b>Victoire Gimnasia Mendoza</b> <span class="small">· chances 43 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Gimnasia Mendoza ou nul · chances 74 % · cote mini 1.38</div></div>
+              <div class="mini"><span>cote mini</span><b>2.36</b></div></div></div></div><div class="comp" data-comp><h4>Brazil Série B</h4><div class="list"><div class="row" data-q="operario pr athletic club (mg) brazil série b">
+              <div class="t">22:30</div>
+              <div class="m"><div class="teams">Operario PR – Athletic Club (MG)</div>
+                <div class="pr"><b>Victoire Operario PR</b> <span class="small">· chances 50 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Operario PR ou nul · chances 77 % · cote mini 1.32</div></div>
+              <div class="mini"><span>cote mini</span><b>2.05</b></div></div></div></div><div class="comp" data-comp><h4>Primera División - Chile</h4><div class="list"><div class="row" data-q="audax italiano huachipato primera división - chile">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">Audax Italiano – Huachipato</div>
+                <div class="pr"><b>Victoire Audax Italiano</b> <span class="small">· chances 46 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Audax Italiano ou nul · chances 73 % · cote mini 1.40</div></div>
+              <div class="mini"><span>cote mini</span><b>2.23</b></div></div></div></div><div class="comp" data-comp><h4>Brazil Série A</h4><div class="list"><div class="row" data-q="cruzeiro remo brazil série a">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">Cruzeiro – Remo</div>
+                <div class="pr"><b>Victoire Cruzeiro</b> <span class="small">· chances 69 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.48</b></div></div></div></div><div class="comp" data-comp><h4>NCAAF</h4><div class="list"><div class="row" data-q="virginia cavaliers duke blue devils ncaaf">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">Virginia Cavaliers – Duke Blue Devils</div>
+                <div class="pr"><b>Victoire Virginia Cavaliers</b> <span class="small">· chances 54 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.90</b></div></div><div class="row" data-q="uconn huskies umass minutemen ncaaf">
+              <div class="t">23:00</div>
+              <div class="m"><div class="teams">UConn Huskies – UMass Minutemen</div>
+                <div class="pr"><b>Victoire UConn Huskies</b> <span class="small">· chances 84 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.22</b></div></div></div></div><h3 class="day">Samedi 24 octobre 2026</h3><div class="comp" data-comp><h4>MLB</h4><div class="list"><div class="row" data-q="milwaukee brewers tampa bay rays mlb">
+              <div class="t">00:00</div>
+              <div class="m"><div class="teams">Milwaukee Brewers – Tampa Bay Rays</div>
+                <div class="pr"><b>Victoire Milwaukee Brewers</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div></div></div><div class="comp" data-comp><h4>Brazil Série B</h4><div class="list"><div class="row" data-q="sport recife criciuma brazil série b">
+              <div class="t">00:00</div>
+              <div class="m"><div class="teams">Sport Recife – Criciuma</div>
+                <div class="pr"><b>Victoire Sport Recife</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Sport Recife ou nul · chances 68 % · cote mini 1.49</div></div>
+              <div class="mini"><span>cote mini</span><b>2.60</b></div></div></div></div><div class="comp" data-comp><h4>NBA</h4><div class="list"><div class="row" data-q="miami heat detroit pistons nba">
+              <div class="t">00:10</div>
+              <div class="m"><div class="teams">Miami Heat – Detroit Pistons</div>
+                <div class="pr"><b>Victoire Miami Heat</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.91</b></div></div><div class="row" data-q="san antonio spurs houston rockets nba">
+              <div class="t">01:40</div>
+              <div class="m"><div class="teams">San Antonio Spurs – Houston Rockets</div>
+                <div class="pr"><b>Victoire San Antonio Spurs</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 67 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.52</b></div></div><div class="row" data-q="utah jazz new orleans pelicans nba">
+              <div class="t">01:40</div>
+              <div class="m"><div class="teams">Utah Jazz – New Orleans Pelicans</div>
+                <div class="pr"><b>Victoire Utah Jazz</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div><div class="row" data-q="golden state warriors memphis grizzlies nba">
+              <div class="t">02:10</div>
+              <div class="m"><div class="teams">Golden State Warriors – Memphis Grizzlies</div>
+                <div class="pr"><b>Victoire Golden State Warriors</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div><div class="row" data-q="los angeles lakers los angeles clippers nba">
+              <div class="t">02:10</div>
+              <div class="m"><div class="teams">Los Angeles Lakers – Los Angeles Clippers</div>
+                <div class="pr"><b>Victoire Los Angeles Lakers</b> <span class="small">· chances 77 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.33</b></div></div><div class="row" data-q="sacramento kings portland trail blazers nba">
+              <div class="t">02:10</div>
+              <div class="m"><div class="teams">Sacramento Kings – Portland Trail Blazers</div>
+                <div class="pr"><b>Victoire Portland Trail Blazers</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 70 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.46</b></div></div></div></div><div class="comp" data-comp><h4>Primera División - Argentina</h4><div class="list"><div class="row" data-q="ca tigre ba atlético tucuman primera división - argentina">
+              <div class="t">00:15</div>
+              <div class="m"><div class="teams">CA Tigre BA – Atlético Tucuman</div>
+                <div class="pr"><b>Victoire CA Tigre BA</b> <span class="small">· chances 56 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.83</b></div></div></div></div><div class="comp" data-comp><h4>NCAAF</h4><div class="list"><div class="row" data-q="tulsa golden hurricane army black knights ncaaf">
+              <div class="t">00:30</div>
+              <div class="m"><div class="teams">Tulsa Golden Hurricane – Army Black Knights</div>
+                <div class="pr"><b>Victoire Tulsa Golden Hurricane</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.94</b></div></div><div class="row" data-q="wyoming cowboys air force falcons ncaaf">
+              <div class="t">01:00</div>
+              <div class="m"><div class="teams">Wyoming Cowboys – Air Force Falcons</div>
+                <div class="pr"><b>Victoire Air Force Falcons</b> <span class="small">· chances 65 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.57</b></div></div><div class="row" data-q="stanford cardinal nc state wolfpack ncaaf">
+              <div class="t">02:30</div>
+              <div class="m"><div class="teams">Stanford Cardinal – NC State Wolfpack</div>
+                <div class="pr"><b>Victoire NC State Wolfpack</b> <span class="small">· chances 69 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.48</b></div></div><div class="row" data-q="auburn tigers lsu tigers ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Auburn Tigers – LSU Tigers</div>
+                <div class="pr"><b>Victoire LSU Tigers</b> <span class="small">· chances 71 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.43</b></div></div><div class="row" data-q="smu mustangs california golden bears ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">SMU Mustangs – California Golden Bears</div>
+                <div class="pr"><b>Victoire SMU Mustangs</b> <span class="small">· chances 88 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.16</b></div></div><div class="row" data-q="cincinnati bearcats texas tech red raiders ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Cincinnati Bearcats – Texas Tech Red Raiders</div>
+                <div class="pr"><b>Victoire Texas Tech Red Raiders</b> <span class="small">· chances 78 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.31</b></div></div><div class="row" data-q="florida atlantic owls rice owls ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Florida Atlantic Owls – Rice Owls</div>
+                <div class="pr"><b>Victoire Florida Atlantic Owls</b> <span class="small">· chances 72 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.41</b></div></div><div class="row" data-q="michigan wolverines indiana hoosiers ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Michigan Wolverines – Indiana Hoosiers</div>
+                <div class="pr"><b>Victoire Indiana Hoosiers</b> <span class="small">· chances 71 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.43</b></div></div><div class="row" data-q="miami hurricanes pittsburgh panthers ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Miami Hurricanes – Pittsburgh Panthers</div>
+                <div class="pr"><b>Victoire Miami Hurricanes</b> <span class="small">· chances 90 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.13</b></div></div><div class="row" data-q="northwestern wildcats rutgers scarlet knights ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Northwestern Wildcats – Rutgers Scarlet Knights</div>
+                <div class="pr"><b>Victoire Northwestern Wildcats</b> <span class="small">· chances 85 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.21</b></div></div><div class="row" data-q="tcu horned frogs west virginia mountaineers ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">TCU Horned Frogs – West Virginia Mountaineers</div>
+                <div class="pr"><b>Victoire TCU Horned Frogs</b> <span class="small">· chances 75 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.36</b></div></div><div class="row" data-q="toledo rockets western michigan broncos ncaaf">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Toledo Rockets – Western Michigan Broncos</div>
+                <div class="pr"><b>Victoire Toledo Rockets</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div></div></div><div class="comp" data-comp><h4>Liga MX</h4><div class="list"><div class="row" data-q="necaxa fc juárez liga mx">
+              <div class="t">01:00</div>
+              <div class="m"><div class="teams">Necaxa – FC Juárez</div>
+                <div class="pr"><b>Victoire Necaxa</b> <span class="small">· chances 54 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Necaxa ou nul · chances 78 % · cote mini 1.31</div></div>
+              <div class="mini"><span>cote mini</span><b>1.89</b></div></div><div class="row" data-q="atlante fc atlético san luis liga mx">
+              <div class="t">03:00</div>
+              <div class="m"><div class="teams">Atlante FC – Atlético San Luis</div>
+                <div class="pr"><b>Victoire Atlante FC</b> <span class="small">· chances 43 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Atlante FC ou nul · chances 70 % · cote mini 1.47</div></div>
+              <div class="mini"><span>cote mini</span><b>2.39</b></div></div></div></div><div class="comp" data-comp><h4>A-League</h4><div class="list"><div class="row" data-q="newcastle jets fc macarthur fc a-league">
+              <div class="t">04:00</div>
+              <div class="m"><div class="teams">Newcastle Jets FC – Macarthur FC</div>
+                <div class="pr"><b>Victoire Newcastle Jets FC</b> <span class="small">· chances 45 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Newcastle Jets FC ou nul · chances 70 % · cote mini 1.46</div></div>
+              <div class="mini"><span>cote mini</span><b>2.25</b></div></div><div class="row" data-q="western sydney wanderers auckland fc a-league">
+              <div class="t">06:00</div>
+              <div class="m"><div class="teams">Western Sydney Wanderers – Auckland FC</div>
+                <div class="pr"><b>Victoire Western Sydney Wanderers</b> <span class="small">· chances 37 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Western Sydney Wanderers ou nul · chances 64 % · cote mini 1.59</div></div>
+              <div class="mini"><span>cote mini</span><b>2.76</b></div></div><div class="row" data-q="melbourne victory melbourne city a-league">
+              <div class="t">08:40</div>
+              <div class="m"><div class="teams">Melbourne Victory – Melbourne City</div>
+                <div class="pr"><b>Victoire Melbourne Victory</b> <span class="small">· chances 38 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Melbourne Victory ou nul · chances 65 % · cote mini 1.57</div></div>
+              <div class="mini"><span>cote mini</span><b>2.66</b></div></div></div></div><div class="comp" data-comp><h4>K League 1</h4><div class="list"><div class="row" data-q="bucheon fc 1995 gwangju fc k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Bucheon FC 1995 – Gwangju FC</div>
+                <div class="pr"><b>Victoire Bucheon FC 1995</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Bucheon FC 1995 ou nul · chances 72 % · cote mini 1.42</div></div>
+              <div class="mini"><span>cote mini</span><b>2.31</b></div></div><div class="row" data-q="sangju sangmu fc daejeon citizen k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Sangju Sangmu FC – Daejeon Citizen</div>
+                <div class="pr"><b>Victoire Daejeon Citizen</b> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Daejeon Citizen ou nul · chances 74 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.19</b></div></div><div class="row" data-q="fc anyang jeonbuk hyundai motors k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">FC Anyang – Jeonbuk Hyundai Motors</div>
+                <div class="pr"><b>Victoire Jeonbuk Hyundai Motors</b> <span class="small">· chances 49 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Jeonbuk Hyundai Motors ou nul · chances 75 % · cote mini 1.36</div></div>
+              <div class="mini"><span>cote mini</span><b>2.10</b></div></div><div class="row" data-q="fc seoul gangwon fc k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">FC Seoul – Gangwon FC</div>
+                <div class="pr"><b>Victoire FC Seoul</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : FC Seoul ou nul · chances 78 % · cote mini 1.32</div></div>
+              <div class="mini"><span>cote mini</span><b>2.01</b></div></div><div class="row" data-q="incheon united jeju united fc k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Incheon United – Jeju United FC</div>
+                <div class="pr"><b>Victoire Incheon United</b> <span class="small">· chances 40 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Incheon United ou nul · chances 70 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.52</b></div></div><div class="row" data-q="ulsan hyundai fc pohang steelers k league 1">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Ulsan Hyundai FC – Pohang Steelers</div>
+                <div class="pr"><b>Victoire Ulsan Hyundai FC</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Ulsan Hyundai FC ou nul · chances 74 % · cote mini 1.38</div></div>
+              <div class="mini"><span>cote mini</span><b>2.13</b></div></div></div></div><div class="comp" data-comp><h4>J League</h4><div class="list"><div class="row" data-q="hiroshima sanfrecce fc shimizu s pulse j league">
+              <div class="t">05:00</div>
+              <div class="m"><div class="teams">Hiroshima Sanfrecce FC – Shimizu S Pulse</div>
+                <div class="pr"><b>Victoire Hiroshima Sanfrecce FC</b> <span class="small">· chances 66 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.55</b></div></div><div class="row" data-q="tokyo verdy avispa fukuoka j league">
+              <div class="t">06:00</div>
+              <div class="m"><div class="teams">Tokyo Verdy – Avispa Fukuoka</div>
+                <div class="pr"><b>Victoire Avispa Fukuoka</b> <span class="small">· chances 40 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Avispa Fukuoka ou nul · chances 71 % · cote mini 1.43</div></div>
+              <div class="mini"><span>cote mini</span><b>2.55</b></div></div><div class="row" data-q="vissel kobe fc machida zelvia j league">
+              <div class="t">06:00</div>
+              <div class="m"><div class="teams">Vissel Kobe – FC Machida Zelvia</div>
+                <div class="pr"><b>Victoire Vissel Kobe</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Vissel Kobe ou nul · chances 68 % · cote mini 1.49</div></div>
+              <div class="mini"><span>cote mini</span><b>2.62</b></div></div><div class="row" data-q="kashima antlers kashiwa reysol j league">
+              <div class="t">06:00</div>
+              <div class="m"><div class="teams">Kashima Antlers – Kashiwa Reysol</div>
+                <div class="pr"><b>Victoire Kashima Antlers</b> <span class="small">· chances 41 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Kashima Antlers ou nul · chances 68 % · cote mini 1.50</div></div>
+              <div class="mini"><span>cote mini</span><b>2.47</b></div></div><div class="row" data-q="gamba osaka kyoto purple sanga j league">
+              <div class="t">07:00</div>
+              <div class="m"><div class="teams">Gamba Osaka – Kyoto Purple Sanga</div>
+                <div class="pr"><b>Victoire Gamba Osaka</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Gamba Osaka ou nul · chances 73 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.13</b></div></div></div></div><div class="comp" data-comp><h4>Super League - China</h4><div class="list"><div class="row" data-q="henan fc beijing fc super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Henan FC – Beijing FC</div>
+                <div class="pr"><b>Victoire Beijing FC</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Beijing FC ou nul · chances 69 % · cote mini 1.48</div></div>
+              <div class="mini"><span>cote mini</span><b>2.33</b></div></div><div class="row" data-q="chengdu rongcheng fc dalian yingbo super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Chengdu Rongcheng FC – Dalian Yingbo</div>
+                <div class="pr"><b>Victoire Chengdu Rongcheng FC</b> <span class="small">· chances 46 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Chengdu Rongcheng FC ou nul · chances 71 % · cote mini 1.44</div></div>
+              <div class="mini"><span>cote mini</span><b>2.21</b></div></div><div class="row" data-q="chongqing tonglianglong fc qingdao hainiu fc super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Chongqing Tonglianglong FC – Qingdao Hainiu FC</div>
+                <div class="pr"><b>Victoire Chongqing Tonglianglong FC</b> <span class="small">· chances 75 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.35</b></div></div><div class="row" data-q="liaoning tieren fc zhejiang super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Liaoning Tieren FC – Zhejiang</div>
+                <div class="pr"><b>Victoire Liaoning Tieren FC</b> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Liaoning Tieren FC ou nul · chances 70 % · cote mini 1.46</div></div>
+              <div class="mini"><span>cote mini</span><b>2.16</b></div></div><div class="row" data-q="qingdao west coast fc yunnan yukun super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Qingdao West Coast FC – Yunnan Yukun</div>
+                <div class="pr"><b>Victoire Qingdao West Coast FC</b> <span class="small">· chances 38 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Qingdao West Coast FC ou nul · chances 65 % · cote mini 1.58</div></div>
+              <div class="mini"><span>cote mini</span><b>2.67</b></div></div><div class="row" data-q="wuhan three towns shandong luneng taishan fc super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Wuhan Three Towns – Shandong Luneng Taishan FC</div>
+                <div class="pr"><b>Victoire Shandong Luneng Taishan FC</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Shandong Luneng Taishan FC ou nul · chances 72 % · cote mini 1.42</div></div>
+              <div class="mini"><span>cote mini</span><b>2.11</b></div></div><div class="row" data-q="tianjin jinmen tiger fc shanghai sipg fc super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Tianjin Jinmen Tiger FC – Shanghai SIPG FC</div>
+                <div class="pr"><b>Victoire Shanghai SIPG FC</b> <span class="small">· chances 41 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Shanghai SIPG FC ou nul · chances 68 % · cote mini 1.50</div></div>
+              <div class="mini"><span>cote mini</span><b>2.50</b></div></div><div class="row" data-q="shenzhen peng city fc shanghai shenhua fc super league - china">
+              <div class="t">07:30</div>
+              <div class="m"><div class="teams">Shenzhen Peng City FC – Shanghai Shenhua FC</div>
+                <div class="pr"><b>Victoire Shanghai Shenhua FC</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Shanghai Shenhua FC ou nul · chances 72 % · cote mini 1.41</div></div>
+              <div class="mini"><span>cote mini</span><b>2.11</b></div></div></div></div><div class="comp" data-comp><h4>Premier League - Russia</h4><div class="list"><div class="row" data-q="fc akron tolyatti dinamo moscow premier league - russia">
+              <div class="t">09:45</div>
+              <div class="m"><div class="teams">FC Akron Tolyatti – Dinamo Moscow</div>
+                <div class="pr"><b>Victoire Dinamo Moscow</b> <span class="small">· chances 58 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.77</b></div></div><div class="row" data-q="fc fakel voronezh rodina moscow premier league - russia">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">FC Fakel Voronezh – Rodina Moscow</div>
+                <div class="pr"><b>Victoire FC Fakel Voronezh</b> <span class="small">· chances 45 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : FC Fakel Voronezh ou nul · chances 73 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.27</b></div></div><div class="row" data-q="fc krasnodar fc baltika kaliningrad premier league - russia">
+              <div class="t">16:30</div>
+              <div class="m"><div class="teams">FC Krasnodar – FC Baltika Kaliningrad</div>
+                <div class="pr"><b>Victoire FC Krasnodar</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : FC Krasnodar ou nul · chances 79 % · cote mini 1.28</div></div>
+              <div class="mini"><span>cote mini</span><b>1.93</b></div></div></div></div><div class="comp" data-comp><h4>Frauen-Bundesliga</h4><div class="list"><div class="row" data-q="vfl wolfsburg 1. fc köln frauen-bundesliga">
+              <div class="t">10:00</div>
+              <div class="m"><div class="teams">VfL Wolfsburg – 1. FC Köln</div>
+                <div class="pr"><b>Victoire VfL Wolfsburg</b> <span class="small">· chances 70 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.46</b></div></div><div class="row" data-q="vfb stuttgart eintracht frankfurt frauen-bundesliga">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">VfB Stuttgart – Eintracht Frankfurt</div>
+                <div class="pr"><b>Victoire Eintracht Frankfurt</b> <span class="small">· chances 72 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.43</b></div></div></div></div><div class="comp" data-comp><h4>Ekstraklasa - Poland</h4><div class="list"><div class="row" data-q="piast gliwice cracovia kraków ekstraklasa - poland">
+              <div class="t">10:15</div>
+              <div class="m"><div class="teams">Piast Gliwice – Cracovia Kraków</div>
+                <div class="pr"><b>Victoire Cracovia Kraków</b> <span class="small">· chances 36 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Cracovia Kraków ou nul · chances 64 % · cote mini 1.60</div></div>
+              <div class="mini"><span>cote mini</span><b>2.80</b></div></div><div class="row" data-q="korona kielce gks katowice ekstraklasa - poland">
+              <div class="t">12:45</div>
+              <div class="m"><div class="teams">Korona Kielce – GKS Katowice</div>
+                <div class="pr"><b>Victoire Korona Kielce</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Korona Kielce ou nul · chances 70 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.31</b></div></div><div class="row" data-q="pogoń szczecin radomiak radom ekstraklasa - poland">
+              <div class="t">15:30</div>
+              <div class="m"><div class="teams">Pogoń Szczecin – Radomiak Radom</div>
+                <div class="pr"><b>Victoire Pogoń Szczecin</b> <span class="small">· chances 54 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Pogoń Szczecin ou nul · chances 78 % · cote mini 1.31</div></div>
+              <div class="mini"><span>cote mini</span><b>1.90</b></div></div></div></div><div class="comp" data-comp><h4>Superettan - Sweden</h4><div class="list"><div class="row" data-q="ifk värnamo sandvikens if superettan - sweden">
+              <div class="t">11:00</div>
+              <div class="m"><div class="teams">IFK Värnamo – Sandvikens IF</div>
+                <div class="pr"><b>Victoire IFK Värnamo</b> <span class="small">· chances 48 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : IFK Värnamo ou nul · chances 73 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.12</b></div></div><div class="row" data-q="östersunds fk nordic united fc superettan - sweden">
+              <div class="t">11:00</div>
+              <div class="m"><div class="teams">Östersunds FK – Nordic United FC</div>
+                <div class="pr"><b>Victoire Östersunds FK</b> <span class="small">· chances 61 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.66</b></div></div><div class="row" data-q="ik brage östers if superettan - sweden">
+              <div class="t">15:00</div>
+              <div class="m"><div class="teams">IK Brage – Östers IF</div>
+                <div class="pr"><b>Victoire IK Brage</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : IK Brage ou nul · chances 69 % · cote mini 1.47</div></div>
+              <div class="mini"><span>cote mini</span><b>2.32</b></div></div></div></div><div class="comp" data-comp><h4>Veikkausliiga - Finland</h4><div class="list"><div class="row" data-q="vps vaasa fc inter turku veikkausliiga - finland">
+              <div class="t">11:00</div>
+              <div class="m"><div class="teams">VPS Vaasa – FC Inter Turku</div>
+                <div class="pr"><b>Victoire FC Inter Turku</b> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : FC Inter Turku ou nul · chances 80 % · cote mini 1.28</div></div>
+              <div class="mini"><span>cote mini</span><b>1.87</b></div></div><div class="row" data-q="if gnistan ac oulu veikkausliiga - finland">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">IF Gnistan – AC Oulu</div>
+                <div class="pr"><b>Victoire IF Gnistan</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : IF Gnistan ou nul · chances 71 % · cote mini 1.43</div></div>
+              <div class="mini"><span>cote mini</span><b>2.30</b></div></div></div></div><div class="comp" data-comp><h4>3. Liga - Germany</h4><div class="list"><div class="row" data-q="fc ingolstadt 04 msv duisburg 3. liga - germany">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">FC Ingolstadt 04 – MSV Duisburg</div>
+                <div class="pr"><b>Victoire MSV Duisburg</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : MSV Duisburg ou nul · chances 70 % · cote mini 1.46</div></div>
+              <div class="mini"><span>cote mini</span><b>2.31</b></div></div><div class="row" data-q="fc viktoria köln 1904 sc verl 3. liga - germany">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">FC Viktoria Köln 1904 – SC Verl</div>
+                <div class="pr"><b>Victoire FC Viktoria Köln 1904</b> <span class="small">· chances 57 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.78</b></div></div><div class="row" data-q="sv meppen fc würzburger kickers 3. liga - germany">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">SV Meppen – FC Würzburger Kickers</div>
+                <div class="pr"><b>Victoire SV Meppen</b> <span class="small">· chances 46 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : SV Meppen ou nul · chances 72 % · cote mini 1.42</div></div>
+              <div class="mini"><span>cote mini</span><b>2.22</b></div></div><div class="row" data-q="hansa rostock fortuna düsseldorf 3. liga - germany">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">Hansa Rostock – Fortuna Düsseldorf</div>
+                <div class="pr"><b>Victoire Hansa Rostock</b> <span class="small">· chances 47 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Hansa Rostock ou nul · chances 72 % · cote mini 1.41</div></div>
+              <div class="mini"><span>cote mini</span><b>2.18</b></div></div><div class="row" data-q="wehen wiesbaden sg sonnenhof großaspach 3. liga - germany">
+              <div class="t">12:00</div>
+              <div class="m"><div class="teams">Wehen Wiesbaden – SG Sonnenhof Großaspach</div>
+                <div class="pr"><b>Victoire Wehen Wiesbaden</b> <span class="small">· chances 49 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Wehen Wiesbaden ou nul · chances 74 % · cote mini 1.39</div></div>
+              <div class="mini"><span>cote mini</span><b>2.10</b></div></div><div class="row" data-q="vfb stuttgart ii alemannia aachen 3. liga - germany">
+              <div class="t">14:30</div>
+              <div class="m"><div class="teams">VfB Stuttgart II – Alemannia Aachen</div>
+                <div class="pr"><b>Victoire Alemannia Aachen</b> <span class="small">· chances 46 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Alemannia Aachen ou nul · chances 71 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.22</b></div></div></div></div><div class="comp" data-comp><h4>Allsvenskan - Sweden</h4><div class="list"><div class="row" data-q="ik sirius aik allsvenskan - sweden">
+              <div class="t">13:00</div>
+              <div class="m"><div class="teams">IK Sirius – AIK</div>
+                <div class="pr"><b>Victoire IK Sirius</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.71</b></div></div><div class="row" data-q="bk hacken degerfors if allsvenskan - sweden">
+              <div class="t">13:00</div>
+              <div class="m"><div class="teams">BK Hacken – Degerfors IF</div>
+                <div class="pr"><b>Victoire BK Hacken</b> <span class="small">· chances 67 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.53</b></div></div><div class="row" data-q="djurgardens if örgryte is allsvenskan - sweden">
+              <div class="t">15:30</div>
+              <div class="m"><div class="teams">Djurgardens IF – Örgryte IS</div>
+                <div class="pr"><b>Victoire Djurgardens IF</b> <span class="small">· chances 81 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.26</b></div></div><div class="row" data-q="kalmar ff if brommapojkarna allsvenskan - sweden">
+              <div class="t">15:30</div>
+              <div class="m"><div class="teams">Kalmar FF – IF Brommapojkarna</div>
+                <div class="pr"><b>Victoire Kalmar FF</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Kalmar FF ou nul · chances 76 % · cote mini 1.34</div></div>
+              <div class="mini"><span>cote mini</span><b>2.00</b></div></div></div></div><div class="comp" data-comp><h4>Saudi Pro League</h4><div class="list"><div class="row" data-q="neom abha club saudi pro league">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Neom – Abha Club</div>
+                <div class="pr"><b>Victoire Neom</b> <span class="small">· chances 60 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.70</b></div></div><div class="row" data-q="al-kholood al-ettifaq saudi pro league">
+              <div class="t">15:05</div>
+              <div class="m"><div class="teams">Al-Kholood – Al-Ettifaq</div>
+                <div class="pr"><b>Victoire Al-Ettifaq</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Al-Ettifaq ou nul · chances 65 % · cote mini 1.57</div></div>
+              <div class="mini"><span>cote mini</span><b>2.65</b></div></div></div></div><div class="comp" data-comp><h4>Eliteserien - Norway</h4><div class="list"><div class="row" data-q="bodø/glimt vålerenga eliteserien - norway">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Bodø/Glimt – Vålerenga</div>
+                <div class="pr"><b>Victoire Bodø/Glimt</b> <span class="small">· chances 82 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.25</b></div></div><div class="row" data-q="hamkam rosenborg eliteserien - norway">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">HamKam – Rosenborg</div>
+                <div class="pr"><b>Victoire Rosenborg</b> <span class="small">· chances 59 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.74</b></div></div></div></div><div class="comp" data-comp><h4>MMA</h4><div class="list"><div class="row" data-q="aaron pico losene keita mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Aaron Pico – Losene Keita</div>
+                <div class="pr"><b>Victoire Aaron Pico</b> <span class="star" title="Pari conseillé">⭐</span> <span class="small">· chances 55 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.85</b></div></div><div class="row" data-q="nikita krylov abdulrakhman yakhyaev mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Nikita Krylov – Abdulrakhman Yakhyaev</div>
+                <div class="pr"><b>Victoire Abdulrakhman Yakhyaev</b> <span class="small">· chances 80 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.27</b></div></div><div class="row" data-q="abubakar vagaev jacob malkoun mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Abubakar Vagaev – Jacob Malkoun</div>
+                <div class="pr"><b>Victoire Abubakar Vagaev</b> <span class="small">· chances 59 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.74</b></div></div><div class="row" data-q="abusupyian magomedov cam rowston mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Abusupyian Magomedov – Cam Rowston</div>
+                <div class="pr"><b>Victoire Abusupyian Magomedov</b> <span class="small">· chances 53 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.91</b></div></div><div class="row" data-q="alexander volkov rizvan kuniev mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Alexander Volkov – Rizvan Kuniev</div>
+                <div class="pr"><b>Victoire Alexander Volkov</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.95</b></div></div><div class="row" data-q="azamat murzakanov dominick reyes mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Azamat Murzakanov – Dominick Reyes</div>
+                <div class="pr"><b>Victoire Azamat Murzakanov</b> <span class="small">· chances 66 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.56</b></div></div><div class="row" data-q="bolaji oki daniel santos mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Bolaji Oki – Daniel Santos</div>
+                <div class="pr"><b>Victoire Daniel Santos</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.94</b></div></div><div class="row" data-q="grant dawson nurullo aliev mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Grant Dawson – Nurullo Aliev</div>
+                <div class="pr"><b>Victoire Grant Dawson</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.99</b></div></div><div class="row" data-q="iasmin lucindo nicolle caliari mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Iasmin Lucindo – Nicolle Caliari</div>
+                <div class="pr"><b>Victoire Iasmin Lucindo</b> <span class="small">· chances 75 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.36</b></div></div><div class="row" data-q="kody steele noah gugnon mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Kody Steele – Noah Gugnon</div>
+                <div class="pr"><b>Victoire Kody Steele</b> <span class="small">· chances 58 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.75</b></div></div><div class="row" data-q="lone&#x27;er kavanagh ramazonbek temirov mma">
+              <div class="t">14:00</div>
+              <div class="m"><div class="teams">Lone&#x27;er Kavanagh – Ramazonbek Temirov</div>
+                <div class="pr"><b>Victoire Lone&#x27;er Kavanagh</b> <span class="small">· chances 51 %</span> <span class="tag tag-mid">moyenne</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>2.02</b></div></div><div class="row" data-q="asaf chopurov colby thicknesse mma">
+              <div class="t">15:40</div>
+              <div class="m"><div class="teams">Asaf Chopurov – Colby Thicknesse</div>
+                <div class="pr"><b>Victoire Asaf Chopurov</b> <span class="small">· chances 82 %</span> <span class="tag tag-hi">forte</span></div>
+                </div>
+              <div class="mini"><span>cote mini</span><b>1.25</b></div></div></div></div><div class="comp" data-comp><h4>Austrian Football Bundesliga</h4><div class="list"><div class="row" data-q="wsg tirol grazer ak austrian football bundesliga">
+              <div class="t">15:00</div>
+              <div class="m"><div class="teams">WSG Tirol – Grazer AK</div>
+                <div class="pr"><b>Victoire WSG Tirol</b> <span class="small">· chances 38 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : WSG Tirol ou nul · chances 66 % · cote mini 1.55</div></div>
+              <div class="mini"><span>cote mini</span><b>2.69</b></div></div><div class="row" data-q="hartberg wolfsberger ac austrian football bundesliga">
+              <div class="t">15:00</div>
+              <div class="m"><div class="teams">Hartberg – Wolfsberger AC</div>
+                <div class="pr"><b>Victoire Hartberg</b> <span class="small">· chances 44 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : Hartberg ou nul · chances 70 % · cote mini 1.45</div></div>
+              <div class="mini"><span>cote mini</span><b>2.31</b></div></div></div></div><div class="comp" data-comp><h4>Primera División - Chile</h4><div class="list"><div class="row" data-q="la serena deportes concepción primera división - chile">
+              <div class="t">15:30</div>
+              <div class="m"><div class="teams">La Serena – Deportes Concepción</div>
+                <div class="pr"><b>Victoire La Serena</b> <span class="small">· chances 41 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : La Serena ou nul · chances 69 % · cote mini 1.49</div></div>
+              <div class="mini"><span>cote mini</span><b>2.51</b></div></div></div></div><div class="comp" data-comp><h4>Swiss Superleague</h4><div class="list"><div class="row" data-q="fc zurich fc luzern swiss superleague">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">FC Zurich – FC Luzern</div>
+                <div class="pr"><b>Victoire FC Luzern</b> <span class="small">· chances 39 %</span> <span class="tag tag-lo">faible</span></div>
+                <div class="small">Option prudente : FC Luzern ou nul · chances 63 % · cote mini 1.62</div></div>
+              <div class="mini"><span>cote mini</span><b>2.63</b></div></div><div class="row" data-q="servette fc vaduz swiss superleague">
+              <div class="t">16:00</div>
+              <div class="m"><div class="teams">Servette – FC Vaduz</div>
+                <div class="pr"><b>Victoire Servette</b> <span class="small">· chances 52 %</span> <span class="tag tag-mid">moyenne</span></div>
+                <div class="small">Option prudente : Servette ou nul · chances 75 % · cote mini 1.36</div></div>
+              <div class="mini"><span>cote mini</span><b>1.97</b></div></div></div></div>
+
+  <h2>Pour aller plus loin</h2>
+  <details><summary>Bilan réel des paris conseillés (journal)</summary><div class="stats"><div><b class="pos">+0.00 u</b><span>Tous les paris : 0 réglés, 13 en attente · réussite 0 % · ROI +0.0 %</span></div><div><b>–</b><span>Football : aucun pari encore</span></div><div><b class="pos">+0.00 u</b><span>Autres sports : 0 réglés, 13 en attente · réussite 0 % · ROI +0.0 %</span></div></div>
   <p class="sub">u = unité : gain ou perte si on avait misé 1 € sur chaque pari, à la cote affichée le jour où il a été proposé.</p>
   <div class="stats"><div><b>–</b><span>Foot, Elo en désaccord : aucun pari encore</span></div><div><b>–</b><span>Foot, Elo d&#x27;accord : aucun pari encore</span></div></div>
   <div class="tbl"><table>
     <thead><tr><th>Date</th><th>Compétition</th><th>Match</th><th>Pari</th><th>Cote</th><th>Bookmaker</th><th>Score</th><th>Statut</th><th>Gain (u)</th></tr></thead>
-    <tbody><tr><td>jeudi 22 octobre 2026 18:45</td>
+    <tbody><tr><td>jeudi 22 octobre 2026 16:45</td>
           <td>UEFA Europa Conference League</td>
           <td class="teams">FK Kauno Žalgiris – SK Brann</td><td>Match nul</td>
           <td class="num">4.08</td><td>BetOnline.ag</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>jeudi 22 octobre 2026 19:30</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>jeudi 22 octobre 2026 17:30</td>
           <td>Basketball Euroleague</td>
           <td class="teams">Anadolu Efes – Beşiktaş J.K.</td><td>Victoire Beşiktaş J.K.</td>
           <td class="num">2.95</td><td>BetOnline.ag</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>jeudi 22 octobre 2026 21:00</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>jeudi 22 octobre 2026 19:00</td>
           <td>UEFA Europa Conference League</td>
           <td class="teams">Ajax – Atalanta BC</td><td>Victoire Atalanta BC</td>
           <td class="num">3.55</td><td>Unibet (NL)</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>vendredi 23 octobre 2026 18:00</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>vendredi 23 octobre 2026 16:00</td>
           <td>Ekstraklasa - Poland</td>
           <td class="teams">Motor Lublin – Zagłębie Lubin</td><td>Victoire Zagłębie Lubin</td>
           <td class="num">3.89</td><td>Pinnacle</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 01:10</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>vendredi 23 octobre 2026 23:10</td>
           <td>NBA</td>
           <td class="teams">Washington Wizards – Toronto Raptors</td><td>Victoire Washington Wizards</td>
           <td class="num">2.69</td><td>1xBet</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 03:40</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>vendredi 23 octobre 2026 23:10</td>
+          <td>NBA</td>
+          <td class="teams">Charlotte Hornets – Atlanta Hawks</td><td>Victoire Charlotte Hornets</td>
+          <td class="num">2.30</td><td>Unibet (SE)</td><td class="num"></td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 01:40</td>
           <td>NBA</td>
           <td class="teams">San Antonio Spurs – Houston Rockets</td><td>Victoire Houston Rockets</td>
           <td class="num">3.40</td><td>1xBet</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 04:00</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 02:00</td>
           <td>CFL</td>
           <td class="teams">BC Lions – Winnipeg Blue Bombers</td><td>Victoire BC Lions</td>
           <td class="num">3.65</td><td>Coolbet</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 04:10</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 02:10</td>
           <td>NBA</td>
           <td class="teams">Sacramento Kings – Portland Trail Blazers</td><td>Victoire Sacramento Kings</td>
           <td class="num">3.54</td><td>Pinnacle</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 16:00</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 14:00</td>
           <td>Veikkausliiga - Finland</td>
           <td class="teams">IF Gnistan – AC Oulu</td><td>Match nul</td>
           <td class="num">3.85</td><td>Coolbet</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 16:00</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 14:00</td>
           <td>MMA</td>
           <td class="teams">Aaron Pico – Losene Keita</td><td>Victoire Aaron Pico</td>
           <td class="num">1.85</td><td>Nordic Bet</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 21:30</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 19:30</td>
           <td>NCAAF</td>
           <td class="teams">Minnesota Golden Gophers – Iowa Hawkeyes</td><td>Victoire Minnesota Golden Gophers</td>
           <td class="num">3.26</td><td>MyBookie.ag</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr><tr><td>dimanche 25 octobre 2026 01:30</td>
+          <td class="">en attente</td><td class="num "></td></tr><tr><td>samedi 24 octobre 2026 23:30</td>
           <td>NCAAF</td>
           <td class="teams">Arizona Wildcats – Iowa State Cyclones</td><td>Victoire Iowa State Cyclones</td>
           <td class="num">4.10</td><td>Unibet (SE)</td><td class="num"></td>
-          <td class="">en attente</td><td class="num "></td></tr></tbody></table></div>
-
-  <h2>Comment la stratégie aurait performé (football, simulation)</h2>
-  
+          <td class="">en attente</td><td class="num "></td></tr></tbody></table></div></details>
+  <details><summary>Ce qu'aurait donné la méthode sur les 12 derniers mois</summary>
       <div class="stats">
-        <div><b>166</b><span>paris simulés sur les 12 derniers mois</span></div>
-        <div><b>30 %</b><span>taux de réussite</span></div>
+        <div><b>166</b><span>paris simulés sur les 12 derniers mois (foot européen)</span></div>
+        <div><b>30 %</b><span>de paris gagnés</span></div>
         <div><b>3.52</b><span>cote moyenne</span></div>
-        <div><b class="pos">+2.5 %</b><span>ROI mise fixe</span></div>
-        <div><b class="pos">+4.2 %</b><span>ROI mise conseillée</span></div>
+        <div><b class="pos">+2.5 %</b><span>gain moyen par pari</span></div>
       </div>
-      <ul class="markets"><li>Victoire extérieur : 99 paris, ROI +13.6 %</li><li>Match nul : 7 paris, ROI -45.7 %</li><li>Victoire domicile : 26 paris, ROI -6.3 %</li><li>Plus de 2,5 buts : 12 paris, ROI -3.3 %</li><li>Moins de 2,5 buts : 22 paris, ROI -18.2 %</li></ul>
-
-  <h2>Tous les matchs à venir</h2>
-  <p class="sub">Probabilités du modèle, cote moyenne du marché en dessous. Case verte = pari recommandé.</p>
-  <div class="tbl"><table>
+    <p class="small">Simulation sur le football européen. Résultat fragile : sur si peu de paris, le hasard peut expliquer l'écart.</p></details>
+  <details><summary>Analyse détaillée des matchs européens (buts attendus, modèle)</summary>
+    <div class="tbl"><table>
     <thead><tr><th>Date</th><th>Ligue</th><th>Match</th><th>Buts attendus</th><th>Score probable</th>
     <th>1</th><th>N</th><th>2</th><th>+2,5</th><th>Les 2 marquent</th></tr></thead>
-    <tbody></tbody></table></div>
-
-  <footer><p><b>Méthode des paris.</b> On calcule la probabilité « juste » de chaque issue à partir de la cote moyenne de tous
-  les bookmakers (marge retirée). Un pari est proposé quand un bookmaker offre une cote au moins 2 % au-dessus de cette valeur
-  juste : il est en retard sur le marché. Testé sur 2 saisons, c'est la seule approche qui a été positive (environ +2 %
-  par pari sur ~200 paris par an), alors que notre modèle seul perdait entre 5 et 13 %. Ce résultat reste fragile : sur si peu de
-  paris, le hasard peut à lui seul expliquer un écart de plus ou moins 20 %. La cote peut bouger avant que vous pariiez : vérifiez-la, et ne pariez pas si elle a baissé sous la cote juste.
-  Mise : quart de Kelly, plafonnée à 3 %.</p>
-  <p><b>Analyse des matchs.</b> Modèle de Poisson (Dixon-Coles) sur 3 saisons, matchs récents pondérés plus fort : buts attendus,
-  score probable, probabilités.</p>
-  <p><b>Classement Elo.</b> Calculé à partir des résultats (méthode de clubelo.com). Mélangé aux probabilités, il faisait perdre
-  de l'argent sur 2 saisons. En revanche, les paris où l'Elo n'était pas d'accord avec le pari ont mieux marché (+19 à +31 %),
-  mais sur moins de 80 paris par an : c'est peut-être du hasard. Le journal suit les deux groupes séparément pour trancher.</p>
-  <p>Données : football-data.co.uk. Généré le 22/10/2026 16:40 UTC.</p></footer>
+    <tbody></tbody></table></div></details>
+  <details><summary>D'où viennent les pronostics ?</summary>
+    <p><b>Chances</b> : moyenne des probabilités de 20 à 40 bookmakers (leur marge retirée). Ces cotes intègrent toutes les statistiques
+    publiques (forme, blessures, xG…) : c'est l'estimation la plus fiable disponible. Pour les championnats européens absents des
+    bookmakers, on utilise notre modèle statistique (Poisson, 3 saisons de résultats).</p>
+    <p><b>Cote mini</b> : la cote juste (100 ÷ chances) plus 2 %. En dessous, le bookmaker garde l'avantage.</p>
+    <p><b>Option prudente</b> : quand le favori a moins de 55 % de chances, le site propose aussi la « double chance » (équipe ou nul).</p>
+    <p><b>Paris conseillés</b> : un bookmaker offre une cote au-dessus de la valeur juste. Testé sur 2 saisons : environ +2 % par pari,
+    alors que suivre notre propre modèle perdait de 5 à 13 %. Mise : quart de Kelly, plafonnée à 3 % du budget.</p>
+    <p>Données : football-data.co.uk, The Odds API. Généré le 22/10/2026 16:52 UTC.</p></details>
+  <footer>Si le jeu devient un problème, parles-en à un proche ou à un professionnel.</footer>
+<script>
+document.getElementById('q').addEventListener('input', function () {
+  var q = this.value.toLowerCase().trim();
+  document.querySelectorAll('.row[data-q]').forEach(function (tr) {
+    tr.style.display = !q || tr.dataset.q.indexOf(q) >= 0 ? '' : 'none';
+  });
+  document.querySelectorAll('[data-comp]').forEach(function (c) {
+    c.style.display = c.querySelector('.row[data-q]:not([style*="none"])') ? '' : 'none';
+  });
+});
+</script>
 </main></body></html>

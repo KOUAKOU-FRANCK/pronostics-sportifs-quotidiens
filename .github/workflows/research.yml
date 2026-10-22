@@ -1,6 +1,12 @@
 name: Réglage du modèle
 on:
   workflow_dispatch:
+    inputs:
+      script:
+        description: "Script à lancer"
+        default: research.py
+        type: choice
+        options: [research.py, research_elo.py]
 jobs:
   research:
     runs-on: ubuntu-latest
@@ -9,4 +15,9 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: python research.py
+      - uses: actions/cache@v4
+        with:
+          path: .cache
+          key: research-${{ github.run_id }}
+          restore-keys: research-
+      - run: python ${{ inputs.script || 'research.py' }}

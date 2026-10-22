@@ -23,7 +23,7 @@ history = data.load_history(today, cache, seasons=4)
 print(len(history), "matchs historiques")
 # blend=1.0 : on ignore le modèle et on cherche seulement les bookmakers en retard sur le consensus
 grid = [{"blend": b, "min_edge": e, "price": pr}
-        for pr in ("best",) for b in (1.0,) for e in (0.02, 0.03, 0.04, 0.06)]
+        for pr in ("best", "mine") for b in (1.0,) for e in (0.0, 0.01, 0.02, 0.03, 0.04)]
 for label, end in (("RÉGLAGE (il y a 2 ans -> 1 an)", today - timedelta(days=365)),
                    ("VALIDATION (12 derniers mois)", today)):
     print("\n==", label)

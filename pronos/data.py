@@ -8,6 +8,8 @@ import io
 import os
 import urllib.request
 from dataclasses import dataclass, field
+
+from .picks import MY_BOOKS
 from datetime import date, datetime
 
 BASE = "https://www.football-data.co.uk"
@@ -100,10 +102,12 @@ BOOKS = [
 EXCHANGE_COMMISSION = 0.05  # Betfair prélève ~5 % des gains
 
 
-def _best_books(row):
-    """Meilleure cote parmi les bookmakers nommés, pour chaque issue."""
+def _best_books(row, only=None):
+    """Meilleure cote parmi les bookmakers nommés (ou seulement ceux de `only`), pour chaque issue."""
     best = {}
     for name, hda, ou in BOOKS:
+        if only is not None and name not in only:
+            continue
         for k, col in list(zip(("H", "D", "A"), hda)) + list(zip(("O25", "U25"), ou)):
             o = _num(row, col)
             if not o:
@@ -148,7 +152,9 @@ def parse_csv(text: str, default_div: str | None = None) -> list[Match]:
             "U25_max": _num(row, "Max<2.5", "BbMx<2.5"),
         }
         for k, (o, name) in _best_books(row).items():
-            odds[k + "_best"], odds[k + "_book"] = o, name
+            odds[k + "_best"], odds[k + "_best_book"] = o, name
+        for k, (o, name) in _best_books(row, MY_BOOKS).items():
+            odds[k + "_mine"], odds[k + "_mine_book"] = o, name
         out.append(Match(div, d, (row.get("Time") or "").strip(), home, away,
                          int(hg) if hg.isdigit() else None,
                          int(ag) if ag.isdigit() else None,

@@ -1,4 +1,7 @@
-"""Test : la force Elo des clubs (clubelo.com) améliore-t-elle la stratégie ?
+"""Test : la force Elo des clubs améliore-t-elle la stratégie ?
+
+Source : clubelo.com si son API répond, sinon un Elo calculé ici avec la même méthode
+(résultats football-data, bonus selon l'écart de buts, avantage du terrain).
 
 On compare, sur l'avant-dernière année (réglage) et les 12 derniers mois (validation) :
 - la stratégie actuelle (consensus du marché vs meilleure cote) ;
@@ -91,6 +94,58 @@ class Matcher:
         return hit
 
 
+def own_elo(history, k=20.0):
+    """Elo maison par championnat ; renvoie {id(match): (elo_dom, elo_ext)} AVANT chaque match."""
+    ratings = defaultdict(dict)
+    pre = {}
+    for m in sorted(history, key=lambda m: m.day):
+        r = ratings[m.div]
+        base = (sum(r.values()) / len(r) - 50) if r else 1500.0  # nouvelle équipe : un peu sous la moyenne
+        rh, ra = r.get(m.home, base), r.get(m.away, base)
+        pre[id(m)] = (rh, ra)
+        exp = 1 / (1 + 10 ** (-(rh - ra + HOME_ADV) / 400))
+        res = 1.0 if m.hg > m.ag else 0.5 if m.hg == m.ag else 0.0
+        gd = abs(m.hg - m.ag)
+        mult = 1 if gd <= 1 else 1.5 if gd == 2 else (11 + gd) / 8
+        delta = k * mult * (res - exp)
+        r[m.home], r[m.away] = rh + delta, ra - delta
+    return pre
+
+
+def run_own(history, end, grid, pre, days=365):
+    start = end - timedelta(days=days)
+    bets = {name: [] for name in grid}
+    for m in history:
+        if not (start <= m.day < end):
+            continue
+        mp = market_probs(m.odds)
+        if "H" not in mp:
+            continue
+        rh, ra = pre[id(m)]
+        e = 1 / (1 + 10 ** (-(rh - ra + HOME_ADV) / 400))
+        elo_p = {"H": (1 - mp["D"]) * e, "D": mp["D"], "A": (1 - mp["D"]) * (1 - e),
+                 "O25": mp.get("O25", 0), "U25": mp.get("U25", 0)}
+        for name, (w, edge, filt) in grid.items():
+            for p in evaluate(elo_p, m.odds, blend=1 - w, min_edge=edge):
+                if p["market"] not in ("H", "D", "A"):
+                    continue
+                agree = elo_p[p["market"]] >= mp[p["market"]]
+                if filt == "accord" and not agree or filt == "désaccord" and agree:
+                    continue
+                bets[name].append({"market": p["market"], "odds": p["odds"], "stake": p["stake"],
+                                   "profit": (p["odds"] - 1) if won(p["market"], m) else -1.0})
+    return {name: summarize(b) for name, b in bets.items()}
+
+
+def clubelo_up():
+    try:
+        with urllib.request.urlopen(f"http://api.clubelo.com/{date.today().isoformat()}", timeout=30) as r:
+            return r.status == 200
+    except Exception as e:
+        print(f"[elo] clubelo.com indisponible ({e}) : Elo calculé à partir des résultats")
+        return False
+
+
 def run(history, end, grid, days=365, step=7):
     start = end - timedelta(days=days)
     bets = {name: [] for name in grid}
@@ -139,10 +194,13 @@ def main():
         grid[f"actuel-désacc edge>={edge}"] = (0.0, edge, "désaccord")
         for w in (0.2, 0.4, 0.6):
             grid[f"elo w={w}     edge>={edge}"] = (w, edge, None)
+    use_clubelo = clubelo_up()
+    pre = None if use_clubelo else own_elo(history)
     for label, end in (("RÉGLAGE (il y a 2 ans -> 1 an)", today - timedelta(days=365)),
                        ("VALIDATION (12 derniers mois)", today)):
-        print("\n==", label, "(1N2 uniquement)")
-        for name, r in run(history, end, grid).items():
+        print("\n==", label, "(1N2 uniquement)", "Club Elo" if use_clubelo else "Elo maison")
+        res = run(history, end, grid) if use_clubelo else run_own(history, end, grid, pre)
+        for name, r in res.items():
             if r["n"]:
                 print(f"{name}  n={r['n']:4}  réussite={r['hit_rate']:.3f}  cote={r['avg_odds']:.2f}  "
                       f"ROI={r['roi_flat'] * 100:+.1f}%  ROI kelly={r['roi_kelly'] * 100:+.1f}%")

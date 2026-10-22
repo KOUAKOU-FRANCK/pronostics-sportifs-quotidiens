@@ -18,7 +18,7 @@ import urllib.request
 from collections import defaultdict
 from datetime import date, timedelta
 
-from pronos import data
+from pronos import data, elo
 from pronos.backtest import summarize, won
 from pronos.picks import evaluate, market_probs
 
@@ -94,22 +94,8 @@ class Matcher:
         return hit
 
 
-def own_elo(history, k=20.0):
-    """Elo maison par championnat ; renvoie {id(match): (elo_dom, elo_ext)} AVANT chaque match."""
-    ratings = defaultdict(dict)
-    pre = {}
-    for m in sorted(history, key=lambda m: m.day):
-        r = ratings[m.div]
-        base = (sum(r.values()) / len(r) - 50) if r else 1500.0  # nouvelle équipe : un peu sous la moyenne
-        rh, ra = r.get(m.home, base), r.get(m.away, base)
-        pre[id(m)] = (rh, ra)
-        exp = 1 / (1 + 10 ** (-(rh - ra + HOME_ADV) / 400))
-        res = 1.0 if m.hg > m.ag else 0.5 if m.hg == m.ag else 0.0
-        gd = abs(m.hg - m.ag)
-        mult = 1 if gd <= 1 else 1.5 if gd == 2 else (11 + gd) / 8
-        delta = k * mult * (res - exp)
-        r[m.home], r[m.away] = rh + delta, ra - delta
-    return pre
+def own_elo(history):
+    return elo.compute(history)[1]
 
 
 def run_own(history, end, grid, pre, days=365):

@@ -26,7 +26,8 @@ def _base(p):
     return {"odds": round(p["odds"], 3), "book": p.get("book"), "prob": round(p["prob"], 4),
             "edge": round(p["edge"], 4), "stake": round(p["stake"], 4),
             "added": datetime.now(timezone.utc).strftime("%Y-%m-%d"),
-            "status": "en attente", "result": None, "profit": None}
+            "status": "en attente", "result": None, "profit": None,
+            "elo_agree": p.get("elo_agree")}
 
 
 def add_football(entries, rows):
@@ -99,8 +100,10 @@ def settle_other(entries, sport_key, scores):
             e["status"], e["profit"] = "annulé", 0.0
 
 
-def stats(entries, sport=None):
+def stats(entries, sport=None, elo_agree="tous"):
     sel = [e for e in entries if sport is None or (e["sport"] == "Football") == (sport == "Football")]
+    if elo_agree != "tous":
+        sel = [e for e in sel if e.get("elo_agree") is elo_agree]
     done = [e for e in sel if e["status"] in ("gagné", "perdu")]
     n = len(done)
     wins = sum(e["status"] == "gagné" for e in done)

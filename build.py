@@ -5,7 +5,7 @@ import os
 from collections import defaultdict
 from datetime import date, datetime, timedelta, timezone
 
-from pronos import backtest, data, journal, oddsapi, site
+from pronos import backtest, data, elo, journal, oddsapi, site
 from pronos.model import PoissonModel
 from pronos.picks import evaluate
 
@@ -30,13 +30,24 @@ def main():
         by_div[m.div].append(m)
     models = {div: PoissonModel().fit(ms, today) for div, ms in by_div.items()}
 
+    ratings, _ = elo.compute(history)
     rows = []
     for f in fixtures:
         model = models.get(f.div)
         if not model:
             continue
         pred = model.predict(f.home, f.away)
-        rows.append({"match": f, "pred": pred, "picks": evaluate(pred, f.odds)})
+        picks = evaluate(pred, f.odds)
+        r = ratings.get(f.div, {})
+        if f.home in r and f.away in r:
+            for p in picks:
+                if p["market"] in ("H", "D", "A") and p.get("market_draw") is not None:
+                    pe = elo.probs_1x2(r[f.home], r[f.away], p["market_draw"])[p["market"]]
+                    p["elo_prob"] = pe
+                    # test sur 2 saisons : les paris où l'Elo est en DÉSACCORD ont mieux marché
+                    # (petit échantillon, à confirmer par le journal)
+                    p["elo_agree"] = pe >= p["prob"]
+        rows.append({"match": f, "pred": pred, "picks": picks})
 
     out_dir = os.path.join(ROOT, "docs")
     os.makedirs(out_dir, exist_ok=True)

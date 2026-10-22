@@ -51,7 +51,8 @@ def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, price=PRICE):
         picks.append({"market": k, "label": MARKETS[k], "odds": o, "prob": p,
                       "fair": 1 / p, "edge": edge, "stake": stake,
                       "book": odds.get(k + "_book") if price == "best" else None,
-                      "model_prob": pred[k], "avg_odds": odds.get(k)})
+                      "model_prob": pred[k], "avg_odds": odds.get(k),
+                      "market_draw": mp.get("D")})
     # un seul pari par marché (1N2, buts) : jamais les deux côtés d'un même match
     best = {}
     for p in picks:
@@ -59,13 +60,3 @@ def evaluate(pred, odds, blend=BLEND, min_edge=MIN_EDGE, price=PRICE):
         if g not in best or p["edge"] > best[g]["edge"]:
             best[g] = p
     return list(best.values())
-
-
-def confidence(p):
-    """Plus d'avantage, et le modèle d'accord avec le pari = plus de confiance."""
-    agrees = p["model_prob"] >= p["prob"]
-    if p["edge"] >= 0.06 and agrees:
-        return "Élevée"
-    if p["edge"] >= 0.06 or agrees:
-        return "Moyenne"
-    return "Faible"

@@ -5,7 +5,7 @@ from zoneinfo import ZoneInfo
 
 from .data import LEAGUES
 from .journal import stats as journal_stats
-from .picks import MARKETS, confidence
+from .picks import MARKETS
 
 JOURS = ["lundi", "mardi", "mercredi", "jeudi", "vendredi", "samedi", "dimanche"]
 MOIS = ["janvier", "février", "mars", "avril", "mai", "juin", "juillet", "août",
@@ -35,6 +35,14 @@ def local_time(iso):
         return iso
 
 
+def elo_badge(p):
+    if p.get("elo_agree") is None:
+        return ""
+    if p["elo_agree"]:
+        return f'<span class="conf">Elo d\'accord ({pct(p["elo_prob"])})</span>'
+    return f'<span class="conf conf-elevee" title="Sur 2 saisons, ces paris ont mieux marché (petit échantillon)">Elo en désaccord ({pct(p["elo_prob"])})</span>'
+
+
 def other_card(p):
     return f"""
       <article class="pick">
@@ -61,7 +69,8 @@ def journal_html(entries):
                 f'{st["pending"]} en attente · réussite {pct(st["hit_rate"])} · ROI {st["roi"] * 100:+.1f} %</span></div>')
     total = journal_stats(entries)
     head = f"""<div class="stats">{block("Tous les paris", total)}{block("Football", journal_stats(entries, "Football"))}{block("Autres sports", journal_stats(entries, "autres"))}</div>
-  <p class="sub">u = unité : gain ou perte si on avait misé 1 € sur chaque pari, à la cote affichée le jour où il a été proposé.</p>"""
+  <p class="sub">u = unité : gain ou perte si on avait misé 1 € sur chaque pari, à la cote affichée le jour où il a été proposé.</p>
+  <div class="stats">{block("Foot, Elo en désaccord", journal_stats(entries, "Football", False))}{block("Foot, Elo d'accord", journal_stats(entries, "Football", True))}</div>"""
     if not entries:
         return head + '<p class="empty">Le journal démarre aujourd\'hui : chaque pari proposé y sera enregistré puis réglé avec le vrai score.</p>'
     order = {"en attente": 0}
@@ -104,7 +113,7 @@ def render(today, rows, bt, generated_at, others=(), entries=(), odds_api=False)
           <div><dt>Avantage</dt><dd class="pos">+{p['edge'] * 100:.1f} %</dd></div>
           <div><dt>Mise conseillée</dt><dd>{p['stake'] * 100:.1f} % bankroll</dd></div>
         </dl>
-        <span class="conf conf-{confidence(p).lower().replace('é', 'e')}">Confiance {confidence(p).lower()}</span>
+        {elo_badge(p)}
       </article>"""
 
     cards = "".join(pick_card(r, p) for r, p in top) or \
@@ -216,6 +225,9 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
   paris, le hasard peut à lui seul expliquer un écart de plus ou moins 20 %. La cote peut bouger avant que vous pariiez : vérifiez-la, et ne pariez pas si elle a baissé sous la cote juste.
   Mise : quart de Kelly, plafonnée à 3 %.</p>
   <p><b>Analyse des matchs.</b> Modèle de Poisson (Dixon-Coles) sur 3 saisons, matchs récents pondérés plus fort : buts attendus,
-  score probable, probabilités. La confiance est « élevée » quand le modèle va dans le même sens que le pari.</p>
+  score probable, probabilités.</p>
+  <p><b>Classement Elo.</b> Calculé à partir des résultats (méthode de clubelo.com). Mélangé aux probabilités, il faisait perdre
+  de l'argent sur 2 saisons. En revanche, les paris où l'Elo n'était pas d'accord avec le pari ont mieux marché (+19 à +31 %),
+  mais sur moins de 80 paris par an : c'est peut-être du hasard. Le journal suit les deux groupes séparément pour trancher.</p>
   <p>Données : football-data.co.uk. Généré le {e(generated_at)}.</p></footer>
 </main></body></html>"""

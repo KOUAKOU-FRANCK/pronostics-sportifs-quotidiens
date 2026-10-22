@@ -211,7 +211,7 @@ footer {{ margin-top:40px; color:var(--mute); font-size:13px }}
 
   <footer><p><b>Méthode des paris.</b> On calcule la probabilité « juste » de chaque issue à partir de la cote moyenne de tous
   les bookmakers (marge retirée). Un pari est proposé quand un bookmaker offre une cote au moins 2 % au-dessus de cette valeur
-  juste : il est en retard sur le marché. Testé sur 2 saisons, c'est la seule approche qui a été positive (environ +4 %
+  juste : il est en retard sur le marché. Testé sur 2 saisons, c'est la seule approche qui a été positive (environ +2 %
   par pari sur ~200 paris par an), alors que notre modèle seul perdait entre 5 et 13 %. Ce résultat reste fragile : sur si peu de
   paris, le hasard peut à lui seul expliquer un écart de plus ou moins 20 %. La cote peut bouger avant que vous pariiez : vérifiez-la, et ne pariez pas si elle a baissé sous la cote juste.
   Mise : quart de Kelly, plafonnée à 3 %.</p>

@@ -75,9 +75,9 @@
   "edge": 0.0232,
   "stake": 0.0026,
   "added": "2026-10-22",
-  "status": "en attente",
-  "result": null,
-  "profit": null
+  "status": "gagné",
+  "result": "13-10",
+  "profit": 2.26
  },
  {
   "id": "basketball_euroleague|413d17f2392e6612cbee6b42870ee84b|Beşiktaş J.K.",
@@ -137,9 +137,9 @@
   "edge": 0.0401,
   "stake": 0.0032,
   "added": "2026-10-22",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "39-3",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -221,9 +221,9 @@
   "edge": 0.0482,
   "stake": 0.0042,
   "added": "2026-10-22",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "3-4",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -326,9 +326,9 @@
   "edge": 0.0235,
   "stake": 0.004,
   "added": "2026-10-23",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "gagné",
+  "result": "0-2",
+  "profit": 1.45,
   "elo_agree": null
  },
  {
@@ -347,9 +347,9 @@
   "edge": 0.0347,
   "stake": 0.003,
   "added": "2026-10-23",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "1-1",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -368,9 +368,9 @@
   "edge": 0.0279,
   "stake": 0.0023,
   "added": "2026-10-23",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "2-0",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -532,9 +532,9 @@
   "edge": 0.0218,
   "stake": 0.0025,
   "added": "2026-10-24",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "gagné",
+  "result": "1-2",
+  "profit": 2.2,
   "elo_agree": null
  },
  {
@@ -616,9 +616,9 @@
   "edge": 0.0213,
   "stake": 0.0044,
   "added": "2026-10-24",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "4-5",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -658,9 +658,9 @@
   "edge": 0.0293,
   "stake": 0.0045,
   "added": "2026-10-24",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "27-28",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -679,9 +679,9 @@
   "edge": 0.0626,
   "stake": 0.03,
   "added": "2026-10-24",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "14-21",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -700,6 +700,27 @@
   "edge": 0.0247,
   "stake": 0.0043,
   "added": "2026-10-24",
+  "status": "en attente",
+  "result": null,
+  "profit": null,
+  "elo_agree": null
+ },
+ {
+  "id": "soccer_chile_campeonato|9ae7686586f28eedbbe602a4c136baed|Union La Calera",
+  "sport": "Primera División - Chile",
+  "sport_key": "soccer_chile_campeonato",
+  "event_id": "9ae7686586f28eedbbe602a4c136baed",
+  "start": "2026-10-25T18:00:00Z",
+  "home": "Union La Calera",
+  "away": "Universidad Católica (CHI)",
+  "outcome": "Union La Calera",
+  "label": "Victoire Union La Calera",
+  "odds": 3.85,
+  "book": "Coolbet",
+  "prob": 0.2668,
+  "edge": 0.0272,
+  "stake": 0.0024,
+  "added": "2026-10-25",
   "status": "en attente",
   "result": null,
   "profit": null,

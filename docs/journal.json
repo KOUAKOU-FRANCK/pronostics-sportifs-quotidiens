@@ -1057,9 +1057,9 @@
   "edge": 0.0461,
   "stake": 0.0049,
   "added": "2026-10-28",
-  "status": "en attente",
+  "status": "annulé",
   "result": null,
-  "profit": null,
+  "profit": 0.0,
   "elo_agree": null
  },
  {
@@ -1386,9 +1386,9 @@
   "edge": 0.0324,
   "stake": 0.0028,
   "added": "2026-10-30",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "gagné",
+  "result": "0-0",
+  "profit": 2.88,
   "elo_agree": null
  },
  {
@@ -1449,9 +1449,9 @@
   "edge": 0.021,
   "stake": 0.0019,
   "added": "2026-10-30",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "30-10",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1470,9 +1470,9 @@
   "edge": 0.0729,
   "stake": 0.0064,
   "added": "2026-10-30",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "33-26",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1575,9 +1575,9 @@
   "edge": 0.0205,
   "stake": 0.0018,
   "added": "2026-10-31",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "111-136",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1596,9 +1596,9 @@
   "edge": 0.0219,
   "stake": 0.002,
   "added": "2026-10-31",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "gagné",
+  "result": "2-0",
+  "profit": 2.7,
   "elo_agree": null
  },
  {
@@ -1659,9 +1659,9 @@
   "edge": 0.0379,
   "stake": 0.0032,
   "added": "2026-10-31",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "1-0",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1701,9 +1701,9 @@
   "edge": 0.0307,
   "stake": 0.0027,
   "added": "2026-10-31",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "34-11",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1743,9 +1743,9 @@
   "edge": 0.0362,
   "stake": 0.0032,
   "added": "2026-10-31",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "4-1",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -1764,6 +1764,27 @@
   "edge": 0.0515,
   "stake": 0.0051,
   "added": "2026-10-31",
+  "status": "en attente",
+  "result": null,
+  "profit": null,
+  "elo_agree": null
+ },
+ {
+  "id": "tennis_atp_paris_masters|a397cd2c21e2038f589dfcc1bbf4a5d9|Matteo Arnaldi",
+  "sport": "ATP Paris Masters",
+  "sport_key": "tennis_atp_paris_masters",
+  "event_id": "a397cd2c21e2038f589dfcc1bbf4a5d9",
+  "start": "2026-11-02T10:00:00Z",
+  "home": "Cameron Norrie",
+  "away": "Matteo Arnaldi",
+  "outcome": "Matteo Arnaldi",
+  "label": "Victoire Matteo Arnaldi",
+  "odds": 3.0,
+  "book": "Pinnacle",
+  "prob": 0.3401,
+  "edge": 0.0203,
+  "stake": 0.0025,
+  "added": "2026-11-01",
   "status": "en attente",
   "result": null,
   "profit": null,

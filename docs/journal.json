@@ -2200,9 +2200,9 @@
   "edge": 0.0338,
   "stake": 0.0031,
   "added": "2026-11-05",
-  "status": "en attente",
+  "status": "annulé",
   "result": null,
-  "profit": null,
+  "profit": 0.0,
   "elo_agree": null
  },
  {
@@ -2220,9 +2220,9 @@
   "edge": 0.0491,
   "stake": 0.0041,
   "added": "2026-11-06",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "1-1",
+  "profit": -1.0,
   "elo_agree": true
  },
  {
@@ -2240,9 +2240,9 @@
   "edge": 0.0222,
   "stake": 0.0022,
   "added": "2026-11-06",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "0-1",
+  "profit": -1.0,
   "elo_agree": false
  },
  {
@@ -2324,9 +2324,9 @@
   "edge": 0.0357,
   "stake": 0.0034,
   "added": "2026-11-07",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "9-19",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -2345,9 +2345,9 @@
   "edge": 0.0224,
   "stake": 0.0023,
   "added": "2026-11-07",
-  "status": "en attente",
-  "result": null,
-  "profit": null,
+  "status": "perdu",
+  "result": "27-24",
+  "profit": -1.0,
   "elo_agree": null
  },
  {
@@ -2408,6 +2408,27 @@
   "edge": 0.0348,
   "stake": 0.0158,
   "added": "2026-11-08",
+  "status": "gagné",
+  "result": "23-27",
+  "profit": 0.55,
+  "elo_agree": null
+ },
+ {
+  "id": "basketball_nba|1df5ff8fe9c6d2dbff1d0ae176063b37|Charlotte Hornets",
+  "sport": "NBA",
+  "sport_key": "basketball_nba",
+  "event_id": "1df5ff8fe9c6d2dbff1d0ae176063b37",
+  "start": "2026-11-10T00:10:00Z",
+  "home": "Charlotte Hornets",
+  "away": "Cleveland Cavaliers",
+  "outcome": "Charlotte Hornets",
+  "label": "Victoire Charlotte Hornets",
+  "odds": 4.0,
+  "book": "Winamax (DE)",
+  "prob": 0.2575,
+  "edge": 0.0299,
+  "stake": 0.0025,
+  "added": "2026-11-09",
   "status": "en attente",
   "result": null,
   "profit": null,

@@ -1,1 +1,40 @@
-[]
+[
+ {
+  "date": "2026-11-21",
+  "league": "EC",
+  "home": "Kidderminster",
+  "away": "Fylde",
+  "market": "H",
+  "label": "Victoire domicile",
+  "odds": 3.708,
+  "prob": 0.2803926173294538,
+  "fair": 3.5664277095606507,
+  "edge": 0.03969582505761471,
+  "stake": 0.0036646810429851093,
+  "book": "Betfair Exchange",
+  "model_prob": 0.36415763171277765,
+  "avg_odds": 3.24,
+  "market_draw": 0.2488964603143645,
+  "elo_prob": 0.4211131224510175,
+  "elo_agree": true
+ },
+ {
+  "date": "2026-11-22",
+  "league": "T1",
+  "home": "Kasimpasa",
+  "away": "Alanyaspor",
+  "market": "A",
+  "label": "Victoire extérieur",
+  "odds": 4.135,
+  "prob": 0.2595038226031166,
+  "fair": 3.853507782540041,
+  "edge": 0.07304830646388716,
+  "stake": 0.00582522380094794,
+  "book": "Betfair Exchange",
+  "model_prob": 0.19710568582253352,
+  "avg_odds": 3.54,
+  "market_draw": 0.269396930209687,
+  "elo_prob": 0.22079636887776397,
+  "elo_agree": false
+ }
+]
